@@ -8,6 +8,7 @@ faiss-cpu==1.15.0
 fastapi==0.141.1
 filelock==3.32.3
 fsspec==2026.7.0
+greenlet==3.5.5
 h11==0.16.0
 hf-xet==1.6.0
 httpcore==1.0.9
@@ -49,6 +50,7 @@ scipy==1.18.0
 sentence-transformers==6.0.0
 setuptools==84.0.0
 shellingham==1.5.4
+SQLAlchemy==2.0.52
 starlette==1.6.0
 sympy==1.14.0
 threadpoolctl==3.6.0

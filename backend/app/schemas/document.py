@@ -1,21 +1,28 @@
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict
 
 
-class DocumentMetadata(BaseModel):
+class DocumentResponse(BaseModel):
+
+    model_config = ConfigDict(
+        from_attributes=True,
+    )
+
     document_id: str
     filename: str
     file_type: str
     file_size_bytes: int
     characters: int
     words: int
-    pages: int | None = None
+    pages: int
+    chunk_count: int
+    status: str
+    error_message: str | None
     uploaded_at: datetime
-    status: str = "processed"
 
 
-class DocumentResponse(BaseModel):
-    success: bool
-    message: str
-    document: DocumentMetadata
+class DocumentListResponse(BaseModel):
+
+    documents: list[DocumentResponse]
+    total: int

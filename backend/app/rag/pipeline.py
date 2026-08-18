@@ -63,6 +63,16 @@ class RAGPipeline:
             top_k=top_k,
         )
 
+
+
+    def delete_document(
+        self,
+        document_id: str,
+    ):
+        self.vector_store.delete_document(
+            document_id
+        )
+
     def ask(
         self,
         question: str,
@@ -114,6 +124,8 @@ class RAGPipeline:
             question=question,
             context=context,
         )
+
+         
 
         return {
             "answer": answer,
