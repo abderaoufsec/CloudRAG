@@ -3,6 +3,7 @@ from pathlib import Path
 
 from fastapi import APIRouter, File, HTTPException, UploadFile, status
 
+from app.rag.pipeline import rag_pipeline
 from app.schemas.document import DocumentResponse
 from app.services.document_service import (
     DocumentProcessingError,
@@ -17,6 +18,7 @@ router = APIRouter(
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
+
 DOCUMENTS_DIR = PROJECT_ROOT / "data" / "documents"
 
 MAX_FILE_SIZE = 10 * 1024 * 1024
@@ -38,7 +40,12 @@ async def upload_document(
 
     extension = Path(file.filename).suffix.lower()
 
-    supported = {".pdf", ".docx", ".txt", ".md"}
+    supported = {
+        ".pdf",
+        ".docx",
+        ".txt",
+        ".md",
+    }
 
     if extension not in supported:
         raise HTTPException(
@@ -58,6 +65,7 @@ async def upload_document(
         )
 
     safe_filename = Path(file.filename).name
+
     destination = DOCUMENTS_DIR / safe_filename
 
     DOCUMENTS_DIR.mkdir(
@@ -95,9 +103,18 @@ async def upload_document(
         encoding="utf-8",
     )
 
+    # Automatically add the document to the vector index.
+    indexing_result = rag_pipeline.index_document(
+        document_id=result["document_id"],
+        text=result["text"],
+    )
+
     return {
         "success": True,
-        "message": "Document uploaded and processed successfully.",
+        "message": (
+            "Document uploaded, processed, "
+            "and indexed successfully."
+        ),
         "document": {
             "document_id": result["document_id"],
             "filename": result["filename"],
@@ -107,6 +124,6 @@ async def upload_document(
             "words": result["words"],
             "pages": result["pages"],
             "uploaded_at": datetime.now(timezone.utc),
-            "status": "processed",
+            "status": "indexed",
         },
     }

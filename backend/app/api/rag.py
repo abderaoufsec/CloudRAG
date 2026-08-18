@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
 from app.rag.pipeline import rag_pipeline
@@ -31,8 +31,22 @@ class SearchRequest(BaseModel):
     )
 
 
+class AskRequest(BaseModel):
+    question: str = Field(
+        min_length=1,
+        description="Question about the indexed documents.",
+    )
+
+    top_k: int = Field(
+        default=5,
+        ge=1,
+        le=10,
+    )
+
+
 @router.post("/index")
 def index_document(request: IndexRequest):
+
     result = rag_pipeline.index_document(
         document_id=request.document_id,
         text=request.text,
@@ -47,6 +61,7 @@ def index_document(request: IndexRequest):
 
 @router.post("/search")
 def search(request: SearchRequest):
+
     results = rag_pipeline.search(
         query=request.query,
         top_k=request.top_k,
@@ -59,8 +74,25 @@ def search(request: SearchRequest):
     }
 
 
+@router.post("/ask")
+def ask(request: AskRequest):
+
+    result = rag_pipeline.ask(
+        question=request.question,
+        top_k=request.top_k,
+    )
+
+    return {
+        "success": True,
+        "question": request.question,
+        "answer": result["answer"],
+        "sources": result["sources"],
+    }
+
+
 @router.get("/stats")
 def stats():
+
     return {
         "vector_count": rag_pipeline.vector_store.size,
     }
