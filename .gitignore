@@ -1,0 +1,35 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# AI / local models
+models/
+*.gguf
+*.safetensors
+*.bin
+
+# Local data
+data/documents/
+data/index/
+data/processed/
+
+# Node
+node_modules/
+.next/
+out/
+
+# Logs
+*.log
+
+# IDE
+.vscode/
+
+# OS
+Thumbs.db
+.DS_Store
