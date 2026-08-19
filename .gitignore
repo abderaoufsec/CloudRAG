@@ -14,6 +14,14 @@ models/
 *.safetensors
 *.bin
 
+# Test/cache
+.pytest_cache/
+.coverage
+
+# Local database
+data/*.db
+data/*.db-*
+
 # Local data
 data/documents/
 data/index/
@@ -27,8 +35,20 @@ out/
 # Logs
 *.log
 
+# Uploaded/generated documents
+data/documents/*
+data/processed/*
+data/index/*
+
 # IDE
 .vscode/
+.idea/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.example
 
 # OS
 Thumbs.db

@@ -108,13 +108,17 @@ class RAGPipeline:
             )
 
             sources.append(
-                {
-                    "document_id": result["document_id"],
-                    "chunk_id": result["chunk_id"],
-                    "chunk_index": result["chunk_index"],
-                    "score": result["score"],
-                }
-            )
+              {
+               "document_id": result["document_id"],
+               "chunk_id": result["chunk_id"],
+               "chunk_index": result["chunk_index"],
+               "score": result["score"],
+               "filename": result.get(
+               "filename",
+                 result["document_id"],
+                  ),
+                   }
+              )
 
         context = "\n\n---\n\n".join(
             context_parts
