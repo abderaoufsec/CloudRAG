@@ -40,3 +40,11 @@ input {
 button {
   cursor: pointer;
 }
+
+button:focus-visible,
+[role="button"]:focus-visible,
+textarea:focus-visible,
+input:focus-visible {
+  outline: 2px solid #8b8df8;
+  outline-offset: 3px;
+}

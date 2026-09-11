@@ -1,0 +1,15 @@
+Artificial intelligence began as a formal scientific area in the 1950s. At the Dartmouth conference in 1956, John McCarthy and other researchers gathered to discuss the idea that machines could simulate aspects of intelligence. John McCarthy was a central figure, and the conference helped define the field of AI.
+
+Early AI research was strongly symbolic. Symbolic AI used explicit rules, representations, and logical reasoning to encode knowledge. A famous language for this work was LISP, which was built around symbolic list processing and recursive computation.
+
+The early optimism of AI was followed by periods of reduced investment and confidence called AI winters. During these years, some projects failed to meet expectations and funding became difficult. In many cases, the difficulty came from brittle expert systems that depended on hand-coded rules and the knowledge acquisition bottleneck. Expert systems were designed to imitate expert reasoning, but they required specialists to convert domain knowledge into formal rules. This transfer of knowledge was slow and expensive, creating the bottleneck.
+
+The AI story later entered the chess and data eras. In 1997, Deep Blue defeated the world chess champion Garry Kasparov, showing that symbolic search and rule-based systems could still produce major breakthroughs. After the success of the World Wide Web, data became much more available, and the data era made statistical learning more practical. Classical machine learning used statistical patterns, feature engineering, and training examples to solve tasks.
+
+Deep learning grew from neural networks and representation learning. It became widely visible through AlexNet in 2012, which showed that neural network training could produce strong results in image recognition. Deep learning later expanded into many domains, including speech, language, and prediction.
+
+Generative adversarial networks, or GANs, were another influential idea. GANs use a generator and a discriminator in a competitive setup to learn how to produce realistic synthetic samples. AlphaGo later showed the power of deep learning and search in the game of Go, reaching a high-profile milestone in board games.
+
+AI also brought new societal risks. Bias can appear when data, culture, or institutions reflect unequal assumptions. Cultural bias can affect how systems represent people, languages, and communities. The EU AI Act was proposed as a governance framework to regulate AI according to levels of risk and accountability. It represents a growing public policy effort to align AI development with safety, transparency, and rights.
+
+Artificial general intelligence, or AGI, remains a long-term research idea. It would describe a machine capable of flexible reasoning across many domains, not only specific tasks. The future of AI depends on governance, transparent standards, and responsible oversight. Governance should balance innovation, safety, accountability, and public trust.

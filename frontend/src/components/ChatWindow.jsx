@@ -91,7 +91,7 @@ function ChatWindow({
 
 
   return (
-    <main className="chat-area">
+    <main className="chat-area" aria-label="Document chat">
 
       <div className="chat-header">
 
@@ -298,6 +298,8 @@ function ChatWindow({
         <div className="chat-input-wrapper">
 
           <textarea
+            aria-label="Question about your documents"
+            dir="auto"
             value={question}
             onChange={(event) =>
               setQuestion(

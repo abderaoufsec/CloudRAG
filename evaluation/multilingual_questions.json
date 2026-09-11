@@ -1,0 +1,22 @@
+[
+  {
+    "id": "english-to-english",
+    "question": "When should the assistant say there is not enough evidence?",
+    "expected_keywords": ["enough evidence"]
+  },
+  {
+    "id": "english-to-french",
+    "question": "What is the French refund policy?",
+    "expected_keywords": ["remboursement complet", "30 jours"]
+  },
+  {
+    "id": "french-to-english",
+    "question": "Quel est le purpose de CloudRAG ?",
+    "expected_keywords": ["document-grounded assistant"]
+  },
+  {
+    "id": "arabic-to-arabic",
+    "question": "ماذا يجب على المستخدمين حمايته؟",
+    "expected_keywords": ["معلومات شخصية حساسة"]
+  }
+]

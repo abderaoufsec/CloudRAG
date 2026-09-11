@@ -1,55 +1,91 @@
-# Python
+# ==============================
+# Python / Virtual Environment
+# ==============================
 .venv/
+venv/
+env/
+ENV/
 __pycache__/
 *.py[cod]
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
 
-# Environment variables
+# ==============================
+# Package and build artifacts
+# ==============================
+*.egg-info/
+dist/
+build/
+out/
+.next/
+
+# ==============================
+# Node / Frontend
+# ==============================
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.vite/
+frontend/.cache/
+
+# ==============================
+# Secret / environment files
+# ==============================
 .env
 .env.*
 !.env.example
+**/.env
+**/.env.*
+!**/.env.example
+*.pem
+*.key
+*.crt
+*.p12
 
-# AI / local models
+# ==============================
+# Local AI model artifacts
+# ==============================
 models/
 *.gguf
 *.safetensors
 *.bin
 
-# Test/cache
-.pytest_cache/
-.coverage
-
-# Local database
-data/*.db
-data/*.db-*
-
-# Local data
+# ==============================
+# Local data, uploads, and generated files
+# ==============================
 data/documents/
 data/index/
 data/processed/
-
-# Node
-node_modules/
-.next/
-out/
-
-# Logs
+output/
+tmp/
+*.db
+*.sqlite3
+*.sqlite
 *.log
 
-# Uploaded/generated documents
-data/documents/*
-data/processed/*
-data/index/*
+# ==============================
+# Evaluation and test artifacts
+# ==============================
+evaluation/reports/
 
-# IDE
+# ==============================
+# IDE / OS files
+# ==============================
 .vscode/
 .idea/
-
-# Frontend
-frontend/node_modules/
-frontend/dist/
-frontend/.env
-frontend/.env.example
-
-# OS
-Thumbs.db
 .DS_Store
+Thumbs.db
+
+# ==============================
+# Docker artifacts
+# ==============================
+.docker/
+

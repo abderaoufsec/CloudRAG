@@ -1,0 +1,7 @@
+CloudRAG is a multilingual Retrieval-Augmented Generation application. It uses local embeddings and FAISS to retrieve relevant document chunks before an answer is generated.
+
+The project is local-first to avoid unnecessary Azure costs during development. Azure OpenAI is optional and must not be called automatically in local mode.
+
+Users can upload PDF, DOCX, TXT, and Markdown documents. Uploaded files are limited to 10 MB and are stored locally during development.
+
+CloudRAG returns citations containing the source document and chunk information. If retrieval evidence is insufficient, it must say that it could not find relevant information in the indexed documents.

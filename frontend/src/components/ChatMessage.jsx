@@ -25,7 +25,7 @@ function ChatMessage({
           {isUser ? "You" : "CloudRAG"}
         </div>
 
-        <div className="message-bubble">
+        <div className="message-bubble" dir="auto">
           <MessageText
             text={message.content}
           />

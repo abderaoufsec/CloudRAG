@@ -168,7 +168,8 @@ function App() {
       const result =
         await askQuestion(
           question,
-          5
+          5,
+          selectedDocument
         );
 
       return result;
@@ -196,7 +197,7 @@ function App() {
       <Header />
 
       {error && (
-        <div className="error-banner">
+        <div className="error-banner" role="alert">
 
           <span>
             ⚠

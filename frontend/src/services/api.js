@@ -55,13 +55,15 @@ export async function deleteDocument(documentId) {
 
 export async function askQuestion(
   question,
-  topK = 5
+  topK = 5,
+  documentId = null
 ) {
   const response = await api.post(
     "/api/rag/ask",
     {
       question,
       top_k: topK,
+      document_id: documentId,
     }
   );
 

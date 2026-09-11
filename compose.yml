@@ -1,0 +1,45 @@
+name: cloudrag
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: deploy/docker/backend.Dockerfile
+    environment:
+      ENVIRONMENT: production
+      CORS_ORIGINS: http://localhost:8080,http://127.0.0.1:8080
+      LLM_PROVIDER: local
+      OLLAMA_BASE_URL: http://host.docker.internal:11434
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen3:8b}
+      VECTOR_STORE: ${VECTOR_STORE:-faiss}
+      QDRANT_URL: ${QDRANT_URL:-https://your-cluster-url.qdrant.tech:6333}
+      QDRANT_API_KEY: ${QDRANT_API_KEY:-your-qdrant-api-key}
+      QDRANT_COLLECTION: ${QDRANT_COLLECTION:-cloudrag}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: deploy/docker/frontend.Dockerfile
+    ports:
+      - "8080:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    restart: unless-stopped

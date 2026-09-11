@@ -1,0 +1,22 @@
+[
+  {
+    "id": "local-first",
+    "question": "Why does CloudRAG use a local-first development strategy?",
+    "expected_keywords": ["local-first", "Azure costs"]
+  },
+  {
+    "id": "retrieval",
+    "question": "Which technologies retrieve relevant document chunks?",
+    "expected_keywords": ["local embeddings", "FAISS"]
+  },
+  {
+    "id": "uploads",
+    "question": "What document formats can users upload?",
+    "expected_keywords": ["PDF", "DOCX", "Markdown"]
+  },
+  {
+    "id": "groundedness",
+    "question": "What should CloudRAG do when there is not enough retrieval evidence?",
+    "expected_keywords": ["could not find relevant information"]
+  }
+]

@@ -13,6 +13,7 @@ from fastapi import (
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
+from app.config import get_settings
 from app.models.document import Document
 from app.rag.pipeline import rag_pipeline
 from app.schemas.document import (
@@ -30,6 +31,7 @@ from app.services.document_repository import (
 from app.services.document_service import (
     DocumentProcessingError,
     process_document,
+    validate_file_content,
 )
 from app.services.file_hash import calculate_file_hash
 
@@ -46,7 +48,7 @@ DOCUMENTS_DIR = PROJECT_ROOT / "data" / "documents"
 
 PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"
 
-MAX_FILE_SIZE = 10 * 1024 * 1024
+MAX_FILE_SIZE = get_settings().max_upload_size_mb * 1024 * 1024
 
 SUPPORTED_EXTENSIONS = {
     ".pdf",
@@ -93,6 +95,14 @@ async def upload_document(
             status_code=413,
             detail="File exceeds the 10 MB limit.",
         )
+
+    try:
+        validate_file_content(extension, content)
+    except DocumentProcessingError as exc:
+        raise HTTPException(
+            status_code=422,
+            detail=str(exc),
+        ) from exc
 
     safe_filename = Path(
         file.filename
@@ -288,9 +298,7 @@ def remove_document(
             detail="Document not found.",
         )
 
-        rag_pipeline.delete_document(
-        document_id
-    )
+    rag_pipeline.delete_document(document_id)
 
     extension = document.file_type
 

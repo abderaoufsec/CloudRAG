@@ -1,0 +1,1 @@
+CloudRAG AI is a multilingual document intelligence application that runs with FastAPI, Next.js, and Qdrant Cloud vector search.

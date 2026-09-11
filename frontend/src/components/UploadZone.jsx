@@ -39,6 +39,9 @@ function UploadZone({
 
   return (
     <div
+      role="button"
+      tabIndex={0}
+      aria-label="Upload a PDF, DOCX, TXT, or Markdown document"
       className={`upload-zone ${
         dragging ? "dragging" : ""
       }`}
@@ -46,6 +49,12 @@ function UploadZone({
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onClick={() => inputRef.current?.click()}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          inputRef.current?.click();
+        }
+      }}
     >
       <input
         ref={inputRef}

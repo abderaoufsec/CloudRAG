@@ -1,0 +1,34 @@
+CloudRAG is a document-grounded assistant. It retrieves relevant passages before
+generating an answer, and it should clearly state when the uploaded documents do
+not provide enough evidence.
+
+Les documents peuvent etre ecrits en francais. La politique de remboursement
+autorise un remboursement complet dans les 30 jours suivant l'achat, a condition
+que le client presente une preuve d'achat valide.
+
+تدعم المنصة المستندات باللغة العربية. يجب على المستخدمين حماية الملفات التي
+يرفعونها وعدم مشاركة معلومات شخصية حساسة داخل المستندات.
+
+CloudRAG retrieval notes: chunks are stored with their document identifier and
+ranked by semantic similarity. A document-grounded response must be based on a
+retrieved passage, not on background knowledge. The evaluation fixture repeats
+this unrelated implementation detail so the refund policy remains a distinct
+retrieval target. Upload validation checks file size, permitted type, and content
+before a file is written to persistent storage. The local system keeps original
+documents, extracted text, SQLite metadata, and FAISS metadata on disk. These
+engineering notes do not change the refund policy or the privacy guidance.
+
+Informations generales en francais : CloudRAG conserve les metadonnees dans une
+base SQLite et recherche des passages dans un index FAISS. Le navigateur ne recoit
+pas les parametres du modele local. Le systeme doit afficher les sources qui ont
+ete recuperees, mais il ne doit jamais inventer une citation. Cette section decrit
+l'architecture technique et ne modifie pas les conditions de remboursement. Les
+fichiers originaux et le texte traite restent disponibles apres le redemarrage des
+conteneurs Docker grace au dossier de donnees persistant.
+
+ملاحظات تقنية إضافية: يستخدم التطبيق نموذج تضمين متعدد اللغات للبحث الدلالي.
+يتم إنشاء الإجابة فقط بعد العثور على مقاطع ذات صلة كافية، وتظهر المصادر الفعلية
+للمستخدم. لا تحتوي هذه الفقرة على سياسة استرداد أو شروط شراء. يحفظ التطبيق
+الفهارس والبيانات الوصفية والملفات المرفوعة محلياً حتى بعد إعادة تشغيل الحاويات.
+الهدف من هذه التفاصيل هو اختبار أن الاسترجاع يميز بين الفقرات المتشابهة وبين
+المعلومة المطلوبة فعلياً.

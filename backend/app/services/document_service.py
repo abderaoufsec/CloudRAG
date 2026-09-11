@@ -1,5 +1,6 @@
 from pathlib import Path
 from uuid import uuid4
+from zipfile import BadZipFile, ZipFile
 
 from docx import Document as DocxDocument
 from pypdf import PdfReader
@@ -12,9 +13,63 @@ SUPPORTED_EXTENSIONS = {
     ".md",
 }
 
+# DOCX files are ZIP archives.  The upload limit limits the compressed file,
+# so cap the extracted archive too to avoid accepting a small ZIP bomb.
+MAX_DOCX_UNCOMPRESSED_SIZE = 50 * 1024 * 1024
+
 
 class DocumentProcessingError(Exception):
     """Raised when a document cannot be processed."""
+
+
+def validate_file_content(extension: str, content: bytes) -> None:
+    """Reject files whose bytes do not match their permitted extension."""
+
+    if not content:
+        raise DocumentProcessingError("The uploaded file is empty.")
+
+    if extension == ".pdf" and not content.startswith(b"%PDF-"):
+        raise DocumentProcessingError(
+            "The uploaded file is not a valid PDF."
+        )
+
+    if extension == ".docx":
+        try:
+            from io import BytesIO
+
+            with ZipFile(BytesIO(content)) as archive:
+                names = set(archive.namelist())
+                uncompressed_size = sum(
+                    entry.file_size for entry in archive.infolist()
+                )
+        except BadZipFile as exc:
+            raise DocumentProcessingError(
+                "The uploaded file is not a valid DOCX document."
+            ) from exc
+
+        required_entries = {"[Content_Types].xml", "word/document.xml"}
+        if not required_entries.issubset(names):
+            raise DocumentProcessingError(
+                "The uploaded file is not a valid DOCX document."
+            )
+
+        if uncompressed_size > MAX_DOCX_UNCOMPRESSED_SIZE:
+            raise DocumentProcessingError(
+                "The DOCX expands beyond the allowed processing limit."
+            )
+
+    if extension in {".txt", ".md"}:
+        if b"\x00" in content:
+            raise DocumentProcessingError(
+                "Text files cannot contain null bytes."
+            )
+
+        try:
+            content.decode("utf-8")
+        except UnicodeDecodeError as exc:
+            raise DocumentProcessingError(
+                "Text files must use UTF-8 encoding."
+            ) from exc
 
 
 def validate_file_extension(filename: str) -> str:

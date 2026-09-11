@@ -1,0 +1,22 @@
+[
+  {"id": "q01", "question": "What are the origins of AI?", "expected_keywords": ["origin", "symbolic", "intelligence"]},
+  {"id": "q02", "question": "What happened at the Dartmouth conference?", "expected_keywords": ["Dartmouth", "conference", "John McCarthy"]},
+  {"id": "q03", "question": "Who is John McCarthy and why is he important in AI history?", "expected_keywords": ["John McCarthy", "Dartmouth", "AI"]},
+  {"id": "q04", "question": "What is symbolic AI?", "expected_keywords": ["symbolic", "representation", "logic"]},
+  {"id": "q05", "question": "What programming language was associated with early symbolic AI and list processing?", "expected_keywords": ["LISP", "symbolic", "programming"]},
+  {"id": "q06", "question": "What are AI winters?", "expected_keywords": ["AI winter", "funding", "expectations"]},
+  {"id": "q07", "question": "What are expert systems?", "expected_keywords": ["expert systems", "knowledge", "rules"]},
+  {"id": "q08", "question": "What is the knowledge acquisition bottleneck?", "expected_keywords": ["knowledge acquisition", "bottleneck", "expert knowledge"]},
+  {"id": "q09", "question": "What was Deep Blue?", "expected_keywords": ["Deep Blue", "chess", "IBM"]},
+  {"id": "q10", "question": "What changed with the World Wide Web and the data era?", "expected_keywords": ["World Wide Web", "data era", "internet"]},
+  {"id": "q11", "question": "What is classical machine learning?", "expected_keywords": ["classical machine learning", "statistics", "features"]},
+  {"id": "q12", "question": "What is deep learning?", "expected_keywords": ["deep learning", "neural networks", "representation"]},
+  {"id": "q13", "question": "What was AlexNet known for?", "expected_keywords": ["AlexNet", "deep learning", "image recognition"]},
+  {"id": "q14", "question": "What are GANs?", "expected_keywords": ["GANs", "generative adversarial", "generator"]},
+  {"id": "q15", "question": "What was AlphaGo?", "expected_keywords": ["AlphaGo", "Go", "deep learning"]},
+  {"id": "q16", "question": "What societal risks are associated with AI?", "expected_keywords": ["societal risks", "bias", "privacy"]},
+  {"id": "q17", "question": "What is cultural bias in AI?", "expected_keywords": ["cultural bias", "bias", "culture"]},
+  {"id": "q18", "question": "What is the EU AI Act?", "expected_keywords": ["EU AI Act", "regulation", "risk"]},
+  {"id": "q19", "question": "What is AGI?", "expected_keywords": ["AGI", "artificial general intelligence", "general intelligence"]},
+  {"id": "q20", "question": "How should AI governance and future progress be handled?", "expected_keywords": ["governance", "future", "AI"]}
+]

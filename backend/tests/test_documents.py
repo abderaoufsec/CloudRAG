@@ -1,30 +1,13 @@
 from pathlib import Path
 
-from fastapi.testclient import TestClient
-
-from app.main import app
-
-
-client = TestClient(app)
-
-
-def test_upload_txt(tmp_path, monkeypatch):
-    import app.api.documents as documents_api
-
-    documents_dir = tmp_path / "documents"
-
-    monkeypatch.setattr(
-        documents_api,
-        "DOCUMENTS_DIR",
-        documents_dir,
-    )
+def test_upload_txt(documents_client):
 
     text = (
         "CloudRAG is a Retrieval-Augmented Generation application.\n"
         "It allows users to ask questions about their documents."
     )
 
-    response = client.post(
+    response = documents_client.post(
         "/api/documents/upload",
         files={
             "file": (
@@ -39,14 +22,14 @@ def test_upload_txt(tmp_path, monkeypatch):
 
     data = response.json()
 
-    assert data["success"] is True
-    assert data["document"]["filename"] == "test.txt"
-    assert data["document"]["file_type"] == ".txt"
-    assert data["document"]["words"] > 0
+    assert data["filename"] == "test.txt"
+    assert data["file_type"] == ".txt"
+    assert data["words"] > 0
+    assert data["status"] == "indexed"
 
 
-def test_reject_unsupported_file():
-    response = client.post(
+def test_reject_unsupported_file(documents_client):
+    response = documents_client.post(
         "/api/documents/upload",
         files={
             "file": (
@@ -58,3 +41,34 @@ def test_reject_unsupported_file():
     )
 
     assert response.status_code == 400
+
+
+def test_rejects_disguised_pdf(documents_client):
+    response = documents_client.post(
+        "/api/documents/upload",
+        files={
+            "file": (
+                "not-a-pdf.pdf",
+                b"this is plain text, not a PDF",
+                "application/pdf",
+            )
+        },
+    )
+
+    assert response.status_code == 422
+    assert response.json()["detail"] == "The uploaded file is not a valid PDF."
+
+
+def test_rejects_text_with_null_bytes(documents_client):
+    response = documents_client.post(
+        "/api/documents/upload",
+        files={
+            "file": (
+                "unsafe.txt",
+                b"safe text\x00unsafe bytes",
+                "text/plain",
+            )
+        },
+    )
+
+    assert response.status_code == 422

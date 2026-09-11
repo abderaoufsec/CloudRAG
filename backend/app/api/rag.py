@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
 from app.rag.pipeline import rag_pipeline
+from app.providers.base import LLMProviderError
 from app.services.document_repository import (
     get_document,
 )
@@ -51,6 +52,11 @@ class AskRequest(BaseModel):
         le=10,
     )
 
+    document_id: str | None = Field(
+        default=None,
+        description="Optionally restrict retrieval to one indexed document.",
+    )
+
 
 @router.post("/index")
 def index_document(
@@ -93,10 +99,20 @@ def ask(
     db: Session = Depends(get_db),
 ):
 
-    result = rag_pipeline.ask(
-        question=request.question,
-        top_k=request.top_k,
-    )
+    if request.document_id and not get_document(db, request.document_id):
+        raise HTTPException(status_code=404, detail="Document not found.")
+
+    try:
+        result = rag_pipeline.ask(
+            question=request.question,
+            top_k=request.top_k,
+            document_id=request.document_id,
+        )
+    except LLMProviderError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="The local AI service is unavailable. Check Ollama and the configured model.",
+        ) from exc
 
     enriched_sources = []
 

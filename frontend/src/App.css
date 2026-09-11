@@ -215,6 +215,10 @@
   transform: translateY(-1px);
 }
 
+.upload-zone:focus-visible {
+  border-color: #8b8df8;
+}
+
 .upload-icon {
   display: grid;
 
@@ -357,8 +361,8 @@
     color 0.15s;
 }
 
-.document-item:hover
-.delete-button {
+.document-item:hover .delete-button,
+.document-item:focus-within .delete-button {
   opacity: 1;
 }
 
@@ -1077,8 +1081,7 @@
     padding: 10px 15px 15px;
   }
 
-  .document-item
-  .delete-button {
+  .document-item .delete-button {
     opacity: 1;
   }
 }

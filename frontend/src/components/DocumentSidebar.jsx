@@ -47,6 +47,12 @@ function DocumentSidebar({
           documents.map((document) => (
             <div
               key={document.document_id}
+              role="button"
+              tabIndex={0}
+              aria-pressed={
+                selectedDocument === document.document_id
+              }
+              aria-label={`Use ${document.filename} for this question`}
               className={`document-item ${
                 selectedDocument ===
                 document.document_id
@@ -58,6 +64,12 @@ function DocumentSidebar({
                   document.document_id
                 )
               }
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  onSelectDocument(document.document_id);
+                }
+              }}
             >
               <div className="document-icon">
                 {getFileIcon(
@@ -82,6 +94,7 @@ function DocumentSidebar({
               <button
                 className="delete-button"
                 title="Delete document"
+                aria-label={`Delete ${document.filename}`}
                 onClick={(event) => {
                   event.stopPropagation();
 

@@ -2,13 +2,13 @@ function SourceCard({
   source,
 }) {
   return (
-    <div className="source-card">
+    <article className="source-card">
       <div className="source-icon">
         📎
       </div>
 
       <div className="source-info">
-        <strong>
+        <strong title={source.filename || source.document_id}>
           {source.filename ||
             source.document_id}
         </strong>
@@ -21,7 +21,7 @@ function SourceCard({
       <div className="source-score">
         {(source.score * 100).toFixed(0)}%
       </div>
-    </div>
+    </article>
   );
 }
 
