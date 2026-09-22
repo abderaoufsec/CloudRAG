@@ -100,9 +100,15 @@ function ChatWindow({
             AI Assistant
           </span>
 
-          <h2>
+          <h1>
             Ask your documents
-          </h2>
+          </h1>
+
+          <p>
+            {selectedDocument
+              ? "Searching your selected document"
+              : "Select a document to start asking questions"}
+          </p>
         </div>
 
         {messages.length > 0 && (
@@ -117,107 +123,101 @@ function ChatWindow({
       </div>
 
 
-      <div className="chat-content">
+      <div className="chat-messages">
 
         {messages.length === 0 ? (
 
-          <div className="welcome-state">
-
-            <div className="welcome-icon">
-              ✦
+          <div className="empty-state">
+            <div className="empty-icon">
+              {selectedDocument ? "✦" : "📄"}
             </div>
 
             <h2>
-              Ask CloudRAG anything
+              {selectedDocument
+                ? "Ask CloudRAG anything"
+                : "Select a document first"}
             </h2>
 
             <p>
-              CloudRAG searches your documents
-              first, then uses the local AI
-              model to generate a grounded answer.
+              {selectedDocument
+                ? "CloudRAG searches your documents first, then uses the local AI model to generate a grounded answer."
+                : "Upload and select a document to start asking questions about its content."}
             </p>
 
             {selectedDocument && (
-              <div className="active-document">
-                <span>📄</span>
-                Searching selected document
+              <div className="suggestion-grid">
+
+                <button
+                  onClick={() =>
+                    setQuestion(
+                      "What is this document about?"
+                    )
+                  }
+                >
+                  <strong>
+                    Summarize
+                  </strong>
+
+                  <span>
+                    What is this document about?
+                  </span>
+                </button>
+
+                <button
+                  onClick={() =>
+                    setQuestion(
+                      "What are the main concepts discussed?"
+                    )
+                  }
+                >
+                  <strong>
+                    Find concepts
+                  </strong>
+
+                  <span>
+                    What are the main concepts?
+                  </span>
+                </button>
+
+                <button
+                  onClick={() =>
+                    setQuestion(
+                      "What are the most important points?"
+                    )
+                  }
+                >
+                  <strong>
+                    Key points
+                  </strong>
+
+                  <span>
+                    Show me the most important points.
+                  </span>
+                </button>
+
+                <button
+                  onClick={() =>
+                    setQuestion(
+                      "Explain the main idea simply."
+                    )
+                  }
+                >
+                  <strong>
+                    Explain
+                  </strong>
+
+                  <span>
+                    Explain the main idea simply.
+                  </span>
+                </button>
+
               </div>
             )}
-
-            <div className="suggestion-grid">
-
-              <button
-                onClick={() =>
-                  setQuestion(
-                    "What is this document about?"
-                  )
-                }
-              >
-                <strong>
-                  Summarize
-                </strong>
-
-                <span>
-                  What is this document about?
-                </span>
-              </button>
-
-              <button
-                onClick={() =>
-                  setQuestion(
-                    "What are the main concepts discussed?"
-                  )
-                }
-              >
-                <strong>
-                  Find concepts
-                </strong>
-
-                <span>
-                  What are the main concepts?
-                </span>
-              </button>
-
-              <button
-                onClick={() =>
-                  setQuestion(
-                    "What are the most important points?"
-                  )
-                }
-              >
-                <strong>
-                  Key points
-                </strong>
-
-                <span>
-                  Show me the most important points.
-                </span>
-              </button>
-
-              <button
-                onClick={() =>
-                  setQuestion(
-                    "Explain the main idea simply."
-                  )
-                }
-              >
-                <strong>
-                  Explain
-                </strong>
-
-                <span>
-                  Explain the main idea simply.
-                </span>
-              </button>
-
-            </div>
-
           </div>
 
         ) : (
 
-          <div className="messages-container">
-
+          <>
             {messages.map(
               (message, index) => (
                 <ChatMessage
@@ -228,63 +228,40 @@ function ChatWindow({
             )}
 
             {asking && (
-              <div className="message-row assistant-row">
-
-                <div className="avatar assistant-avatar">
-                  C
+              <div className="message assistant">
+                <div className="message-avatar">
+                  🤖
                 </div>
 
                 <div className="message-content">
-
-                  <div className="message-label">
-                    CloudRAG
+                  <div className="message-bubble">
+                    Searching your documents...
                   </div>
-
-                  <div className="message-bubble typing">
-                    <span />
-                    <span />
-                    <span />
-                  </div>
-
                 </div>
-
               </div>
             )}
 
             {lastSources.length > 0 && (
-              <div className="sources-section">
-
+              <div className="sources">
                 <div className="sources-header">
-                  <span>
-                    📎
-                  </span>
-
-                  <strong>
-                    Sources
-                  </strong>
+                  Sources
                 </div>
 
-                <div className="sources-grid">
-
-                  {lastSources.map(
-                    (source, index) => (
-                      <SourceCard
-                        key={`${source.chunk_id}-${index}`}
-                        source={source}
-                      />
-                    )
-                  )}
-
-                </div>
-
+                {lastSources.map(
+                  (source, index) => (
+                    <SourceCard
+                      key={`${source.chunk_id}-${index}`}
+                      source={source}
+                    />
+                  )
+                )}
               </div>
             )}
 
             <div
               ref={messagesEndRef}
             />
-
-          </div>
+          </>
         )}
 
       </div>
@@ -306,9 +283,13 @@ function ChatWindow({
                 event.target.value
               )
             }
-            placeholder="Ask a question about your documents..."
+            placeholder={
+              selectedDocument
+                ? "Ask a question about this document..."
+                : "Select a document first..."
+            }
             rows={1}
-            disabled={asking}
+            disabled={asking || !selectedDocument}
             onKeyDown={(event) => {
 
               if (
@@ -328,17 +309,14 @@ function ChatWindow({
             className="send-button"
             disabled={
               asking ||
-              !question.trim()
+              !question.trim() ||
+              !selectedDocument
             }
           >
-            ↑
+            Send
           </button>
 
         </div>
-
-        <span className="input-hint">
-          Enter to send · Shift + Enter for a new line
-        </span>
 
       </form>
 

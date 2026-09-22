@@ -1,20 +1,13 @@
 function Header() {
   return (
-    <header className="app-header">
-      <div className="brand">
-        <div className="brand-icon">C</div>
-
-        <div>
-          <h1>CloudRAG</h1>
-
-          <p>
-            Your documents. Your knowledge. Your AI.
-          </p>
-        </div>
+    <header className="header">
+      <div className="header-logo">
+        <span>📚</span>
+        CloudRAG
       </div>
 
-      <div className="status-badge">
-        <span className="status-dot" />
+      <div className="header-status">
+        <span className="status-dot"></span>
         Local AI
       </div>
     </header>

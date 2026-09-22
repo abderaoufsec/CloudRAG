@@ -39,48 +39,50 @@ function UploadZone({
 
   return (
     <div
-      role="button"
-      tabIndex={0}
-      aria-label="Upload a PDF, DOCX, TXT, or Markdown document"
-      className={`upload-zone ${
-        dragging ? "dragging" : ""
-      }`}
-      onDrop={handleDrop}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onClick={() => inputRef.current?.click()}
-      onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          inputRef.current?.click();
-        }
-      }}
+      className="upload-zone"
     >
-      <input
-        ref={inputRef}
-        type="file"
-        hidden
-        accept=".pdf,.docx,.txt,.md"
-        onChange={(event) =>
-          handleFiles(event.target.files)
-        }
-      />
+      <div
+        role="button"
+        tabIndex={0}
+        aria-label="Upload a PDF, DOCX, TXT, or Markdown document"
+        className={`upload-area ${dragging ? "dragover" : ""}`}
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onClick={() => inputRef.current?.click()}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            inputRef.current?.click();
+          }
+        }}
+      >
+        <input
+          ref={inputRef}
+          type="file"
+          hidden
+          accept=".pdf,.docx,.txt,.md"
+          onChange={(event) =>
+            handleFiles(event.target.files)
+          }
+        />
 
-      <div className="upload-icon">
-        {uploading ? "⏳" : "↑"}
+        <div className="upload-icon">
+          {uploading ? "⏳" : "📤"}
+        </div>
+
+        <div className="upload-text">
+          {uploading
+            ? "Processing document..."
+            : "Drop files here"}
+        </div>
+
+        <div className="upload-subtext">
+          {uploading
+            ? "Extracting, embedding and indexing"
+            : "or click to browse"}
+        </div>
       </div>
-
-      <strong>
-        {uploading
-          ? "Processing document..."
-          : "Upload a document"}
-      </strong>
-
-      <span>
-        {uploading
-          ? "Extracting, embedding and indexing"
-          : "PDF, DOCX, TXT or Markdown"}
-      </span>
     </div>
   );
 }

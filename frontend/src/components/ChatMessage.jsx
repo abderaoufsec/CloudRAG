@@ -6,29 +6,21 @@ function ChatMessage({
 
   return (
     <div
-      className={`message-row ${
-        isUser ? "user-row" : "assistant-row"
-      }`}
+      className={`message ${isUser ? "user" : "assistant"}`}
     >
-      <div
-        className={`avatar ${
-          isUser
-            ? "user-avatar"
-            : "assistant-avatar"
-        }`}
-      >
-        {isUser ? "U" : "C"}
+      <div className="message-avatar">
+        {isUser ? "👤" : "🤖"}
       </div>
 
       <div className="message-content">
-        <div className="message-label">
-          {isUser ? "You" : "CloudRAG"}
-        </div>
-
         <div className="message-bubble" dir="auto">
           <MessageText
             text={message.content}
           />
+        </div>
+
+        <div className="message-time">
+          {isUser ? "You" : "CloudRAG"}
         </div>
       </div>
     </div>
