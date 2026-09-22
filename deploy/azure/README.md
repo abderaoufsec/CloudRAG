@@ -15,9 +15,16 @@ The API uses a user-assigned managed identity with the least-privilege `AcrPull`
 
 ## Deployment scope and cost
 
-This is Milestone 8 only. It deploys the application architecture, but deliberately sets `LLM_PROVIDER=disabled`; local Ollama is not deployed to Azure and Azure OpenAI belongs in Milestone 9.
+This deployment demonstrates the CloudRAG architecture on Azure Container Apps. The backend is configured with `LLM_PROVIDER=local` and `VECTOR_STORE=faiss`, but note that:
 
-Azure Container Apps Consumption can scale to zero, but Azure Container Registry can incur charges. `-EnablePersistentStorage` also creates a Standard_LRS Azure Storage account and Azure Files share, which can incur charges. Persistent storage is required for uploaded documents, SQLite, and FAISS vectors to survive a Container App restart. Without it, the deployment is a temporary smoke-test deployment only.
+- **Local Ollama limitation**: The local Ollama provider configuration references `http://localhost:11434`, which will not be available in Azure Container Apps. For a production Azure deployment, you should:
+  1. Implement an Azure OpenAI provider and configure `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_API_KEY`, and `AZURE_OPENAI_DEPLOYMENT` environment variables
+  2. Deploy Ollama in a separate container with proper internal networking
+  3. Or temporarily set `LLM_PROVIDER=disabled` to run the document processing and retrieval pipeline without the LLM generation step
+
+- **FAISS persistence**: Without `-EnablePersistentStorage`, the FAISS index and SQLite database will be lost when the container app restarts. Use `-EnablePersistentStorage` for state persistence.
+
+Azure Container Apps Consumption can scale to zero, but Azure Container Registry can incur charges. `-EnablePersistentStorage` also creates a Standard_LRS Azure Storage account and Azure Files share, which can incur charges.
 
 ## One-command deployment
 
@@ -37,7 +44,7 @@ The script requires you to type `DEPLOY` before it creates resources. It uses Az
 
 ## Verify and remove
 
-The script prints the frontend URL. Verify its API separately by opening the printed API URL followed by `/api/health`.
+The script prints the frontend URL. Verify its API separately by opening the printed API URL followed by `/api/health` and `/api/ready`.
 
 Delete all resources when the demonstration is over:
 

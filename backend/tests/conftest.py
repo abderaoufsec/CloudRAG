@@ -11,7 +11,7 @@ from app.main import app
 
 
 class StubRAGPipeline:
-    def index_document(self, document_id: str, text: str) -> dict:
+    def index_document(self, document_id: str, text: str, page_mapping: list[int] | None = None) -> dict:
         return {
             "document_id": document_id,
             "chunks": 1,

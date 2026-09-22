@@ -48,3 +48,50 @@ def test_rag_search_uses_cache(monkeypatch):
     assert len(first) == 1
     assert first == second
     assert pipeline.vector_store.search.call_count == 1
+
+
+def test_cache_invalidation_on_document_change(monkeypatch):
+    """
+    Test that cache is invalidated when a document is re-indexed.
+    This prevents stale results from being returned after document updates.
+    """
+    pipeline = object.__new__(RAGPipeline)
+    pipeline.vector_store = Mock()
+    pipeline.vector_store.search.return_value = [
+        {"document_id": "doc1", "chunk_id": "doc1_0", "chunk_index": 0, "score": 0.9, "text": "original content"}
+    ]
+    monkeypatch.setattr("app.rag.pipeline.embed_query", lambda query: [0.1, 0.2])
+
+    # First search - should hit the vector store
+    first = pipeline.search("What is AI?", top_k=3)
+    assert pipeline.vector_store.search.call_count == 1
+
+    # Simulate document re-indexing (which invalidates cache)
+    pipeline._invalidate_document_cache("doc1")
+
+    # Second search - should hit vector store again due to cache invalidation
+    second = pipeline.search("What is AI?", top_k=3)
+    assert pipeline.vector_store.search.call_count == 2
+
+
+def test_cache_invalidation_on_document_deletion(monkeypatch):
+    """
+    Test that cache is invalidated when a document is deleted.
+    """
+    pipeline = object.__new__(RAGPipeline)
+    pipeline.vector_store = Mock()
+    pipeline.vector_store.search.return_value = [
+        {"document_id": "doc1", "chunk_id": "doc1_0", "chunk_index": 0, "score": 0.9, "text": "content"}
+    ]
+    monkeypatch.setattr("app.rag.pipeline.embed_query", lambda query: [0.1, 0.2])
+
+    # First search
+    pipeline.search("What is AI?", top_k=3)
+    assert pipeline.vector_store.search.call_count == 1
+
+    # Manually call cache invalidation (simulating what delete_document does)
+    pipeline._invalidate_document_cache("doc1")
+
+    # Second search - should hit vector store again due to cache invalidation
+    pipeline.search("What is AI?", top_k=3)
+    assert pipeline.vector_store.search.call_count == 2

@@ -26,3 +26,18 @@ def test_health():
     assert data["status"] == "ok"
     assert data["project"] == "CloudRAG"
     assert data["mode"] == "local"
+
+
+def test_readiness():
+    response = client.get("/api/ready")
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["status"] == "ready"
+    assert "checks" in data
+    assert "database" in data["checks"]
+    assert "vector_store" in data["checks"]
+    assert "embedding_provider" in data["checks"]
+    assert "llm_provider" in data["checks"]

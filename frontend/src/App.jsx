@@ -30,31 +30,17 @@ function App() {
     useState(null);
 
 
-  async function loadDocuments() {
-
-    try {
-
-      setError(null);
-
-      const data =
-        await getDocuments();
-
-      setDocuments(
-        data.documents || []
-      );
-
-    } catch (err) {
-
-      console.error(err);
-
-      setError(
-        "Unable to connect to the CloudRAG backend."
-      );
-    }
-  }
-
-
   useEffect(() => {
+    async function loadDocuments() {
+      try {
+        setError(null);
+        const data = await getDocuments();
+        setDocuments(data.documents || []);
+      } catch (err) {
+        console.error(err);
+        setError("Unable to connect to the CloudRAG backend.");
+      }
+    }
     loadDocuments();
   }, []);
 

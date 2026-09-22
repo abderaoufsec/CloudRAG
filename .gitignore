@@ -53,7 +53,7 @@ frontend/.cache/
 # ==============================
 # Local AI model artifacts
 # ==============================
-models/
+/models/
 *.gguf
 *.safetensors
 *.bin

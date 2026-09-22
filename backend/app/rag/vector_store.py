@@ -65,6 +65,11 @@ class QdrantVectorStore:
             )
 
     def add_chunks(self, chunks: list[TextChunk], embeddings):
+        """
+        Add chunks to Qdrant. Uses deterministic UUIDs based on chunk_id,
+        making the operation idempotent - re-indexing the same document
+        will update existing vectors rather than create duplicates.
+        """
         if not chunks:
             return
 
@@ -82,10 +87,12 @@ class QdrantVectorStore:
                 "document_id": chunk.document_id,
                 "chunk_index": chunk.chunk_index,
                 "text": chunk.text,
+                "page": chunk.page,  # Include page number for citations
             }
             # Qdrant Cloud requires point IDs to be a UUID or an unsigned int.
             # The existing chunk_id format is document_id_chunk_index.
             # Convert that semantic key into a deterministic UUID.
+            # This makes upsert idempotent - same chunk_id = same UUID = updates existing point.
             deterministic_id = str(
                 uuid.uuid5(
                     namespace=uuid.NAMESPACE_DNS,
@@ -158,6 +165,7 @@ class QdrantVectorStore:
                     "chunk_index": payload.get("chunk_index"),
                     "text": payload.get("text"),
                     "score": float(hit.score),
+                    "page": payload.get("page"),  # Include page number
                 }
             )
         return results
@@ -172,12 +180,27 @@ class QdrantVectorStore:
 
 
 class VectorStore:
+    """
+    Local FAISS-based vector store for semantic search.
+
+    This implementation uses FAISS IndexFlatIP (inner product) for cosine similarity
+    search with on-disk persistence. The index and metadata are stored as separate files
+    to enable persistence across application restarts.
+
+    Idempotent indexing is achieved by deleting existing document vectors before
+    re-indexing, preventing duplicate entries for the same document.
+    """
 
     def __init__(
         self,
         index_directory: Path,
     ):
+        """
+        Initialize the vector store with a specified directory for index persistence.
 
+        Args:
+            index_directory: Directory path where index and metadata files are stored
+        """
         self.index_directory = Path(
             index_directory
         )
@@ -204,7 +227,12 @@ class VectorStore:
         self._load()
 
     def _load(self):
+        """
+        Load the FAISS index and metadata from disk if they exist.
 
+        This method is called during initialization to restore the vector store
+        state from previous runs. If no index exists, the store starts empty.
+        """
         if self.index_path.exists():
 
             self.index = faiss.read_index(
@@ -220,7 +248,12 @@ class VectorStore:
             )
 
     def _save(self):
+        """
+        Persist the FAISS index and metadata to disk.
 
+        This method writes the current index state to cloudrag.index and
+        the metadata list to metadata.json, ensuring changes survive application restarts.
+        """
         if self.index is not None:
 
             faiss.write_index(
@@ -242,9 +275,27 @@ class VectorStore:
         chunks: list[TextChunk],
         embeddings,
     ):
+        """
+        Add chunks to the vector store. If the document already exists,
+        delete old vectors first to ensure idempotent indexing.
 
+        Idempotency is important because users may re-index the same document
+        after corrections or to update the index. Without deduplication, the
+        same content would appear multiple times in search results.
+
+        Args:
+            chunks: List of TextChunk objects with text and metadata
+            embeddings: Array of embedding vectors corresponding to chunks
+        """
         if not chunks:
             return
+
+        # Check if document already exists and delete old vectors
+        if chunks:
+            document_id = chunks[0].document_id
+            existing_doc_ids = {m["document_id"] for m in self.metadata}
+            if document_id in existing_doc_ids:
+                self.delete_document(document_id)
 
         vectors = np.asarray(
             embeddings,
@@ -269,6 +320,7 @@ class VectorStore:
                     "document_id": chunk.document_id,
                     "chunk_index": chunk.chunk_index,
                     "text": chunk.text,
+                    "page": chunk.page,  # Include page number for citations
                 }
             )
 
@@ -278,7 +330,16 @@ class VectorStore:
         self,
         document_id: str,
     ):
+        """
+        Remove all chunks associated with a document from the vector store.
 
+        This method reconstructs the index without the deleted document's vectors
+        and updates the metadata accordingly. This is used when documents are
+        deleted by users or during idempotent re-indexing.
+
+        Args:
+            document_id: The ID of the document to remove from the store
+        """
         remaining_metadata = []
 
         remaining_vectors = []
@@ -340,7 +401,25 @@ class VectorStore:
         top_k: int = 5,
         document_id: str | None = None,
     ):
+        """
+        Search for the most similar chunks to the query embedding.
 
+        When document_id is specified, the search is restricted to chunks from
+        that document only. This is useful for document-specific Q&A.
+
+        Note: When a document filter is applied, we retrieve all vectors first
+        and then filter post-search. This ensures correct behavior even when
+        the best matching chunk from the selected document would otherwise
+        fall below the global top_k threshold.
+
+        Args:
+            query_embedding: The embedding vector for the search query
+            top_k: Maximum number of results to return
+            document_id: Optional document ID to restrict search scope
+
+        Returns:
+            List of dictionaries containing chunk metadata and similarity scores
+        """
         if self.index is None:
             return []
 
@@ -396,7 +475,12 @@ class VectorStore:
 
     @property
     def size(self) -> int:
+        """
+        Return the total number of vectors in the index.
 
+        Returns:
+            Number of indexed chunks, or 0 if no index exists
+        """
         if self.index is None:
             return 0
 

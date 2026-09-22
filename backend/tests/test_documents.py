@@ -1,5 +1,10 @@
 from pathlib import Path
 
+from app.services.document_service import (
+    DocumentProcessingError,
+    validate_filename,
+)
+
 def test_upload_txt(documents_client):
 
     text = (
@@ -72,3 +77,59 @@ def test_rejects_text_with_null_bytes(documents_client):
     )
 
     assert response.status_code == 422
+
+
+def test_validate_filename_rejects_empty():
+    try:
+        validate_filename("")
+        assert False, "Should raise DocumentProcessingError"
+    except DocumentProcessingError as exc:
+        assert "empty" in str(exc).lower()
+
+
+def test_validate_filename_rejects_path_traversal():
+    try:
+        validate_filename("../../../etc/passwd")
+        assert False, "Should raise DocumentProcessingError"
+    except DocumentProcessingError as exc:
+        assert "invalid" in str(exc).lower()
+
+
+def test_validate_filename_rejects_special_characters():
+    try:
+        validate_filename("test<file>.txt")
+        assert False, "Should raise DocumentProcessingError"
+    except DocumentProcessingError as exc:
+        assert "invalid" in str(exc).lower()
+
+
+def test_validate_filename_rejects_dangerous_extensions():
+    try:
+        validate_filename("malware.exe")
+        assert False, "Should raise DocumentProcessingError"
+    except DocumentProcessingError as exc:
+        assert "dangerous" in str(exc).lower()
+
+
+def test_validate_filename_accepts_valid_names():
+    # These should not raise exceptions
+    validate_filename("document.pdf")
+    validate_filename("my-report.docx")
+    validate_filename("notes.md")
+    validate_filename("data.txt")
+
+
+def test_rejects_invalid_filename_via_api(documents_client):
+    response = documents_client.post(
+        "/api/documents/upload",
+        files={
+            "file": (
+                "../../../etc/passwd",
+                b"some content",
+                "text/plain",
+            )
+        },
+    )
+
+    assert response.status_code == 400
+    assert "invalid" in response.json()["detail"].lower()

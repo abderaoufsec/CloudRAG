@@ -108,8 +108,24 @@ resource api 'Microsoft.App/containerApps@2024-03-01' = {
               value: '*'
             }
             {
+              name: 'TRUSTED_HOSTS'
+              value: '*'
+            }
+            {
               name: 'LLM_PROVIDER'
-              value: 'disabled'
+              value: 'local'
+            }
+            {
+              name: 'OLLAMA_BASE_URL'
+              value: 'http://localhost:11434'
+            }
+            {
+              name: 'OLLAMA_MODEL'
+              value: 'qwen3:8b'
+            }
+            {
+              name: 'VECTOR_STORE'
+              value: 'faiss'
             }
           ]
           resources: {
@@ -175,7 +191,7 @@ resource frontend 'Microsoft.App/containerApps@2024-03-01' = {
           image: frontendImage
           env: [
             {
-              name: 'API_BASE_URL'
+              name: 'VITE_API_URL'
               value: 'https://${api.properties.configuration.ingress.fqdn}'
             }
           ]

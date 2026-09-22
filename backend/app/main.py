@@ -1,14 +1,33 @@
+import logging
+import uuid
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
+import structlog
 
 from app.api.documents import router as documents_router
 from app.api.health import router as health_router
 from app.api.rag import router as rag_router
 from app.config import get_settings
 from app.db.init_db import initialize_database
+
+
+# Configure structured logging
+structlog.configure(
+    processors=[
+        structlog.contextvars.merge_contextvars,
+        structlog.processors.add_log_level,
+        structlog.processors.TimeStamper(fmt="iso"),
+        structlog.dev.ConsoleRenderer(),
+    ],
+    wrapper_class=structlog.make_filtering_bound_logger(logging.INFO),
+    context_class=dict,
+    logger_factory=structlog.PrintLoggerFactory(),
+)
+
+logger = structlog.get_logger()
 
 
 settings = get_settings()
@@ -42,6 +61,24 @@ app.add_middleware(
     TrustedHostMiddleware,
     allowed_hosts=settings.trusted_host_list,
 )
+
+
+@app.middleware("http")
+async def add_request_id(request: Request, call_next):
+    """
+    Add a unique request ID to each request for correlation and debugging.
+    The ID is generated for each request and included in logs and responses.
+    """
+    request_id = str(uuid.uuid4())
+    request.state.request_id = request_id
+
+    # Add request ID to structured logging context
+    structlog.contextvars.bind_contextvars(request_id=request_id)
+
+    response = await call_next(request)
+
+    response.headers["X-Request-ID"] = request_id
+    return response
 
 
 @app.middleware("http")

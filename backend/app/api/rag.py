@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
+import structlog
 
 from app.db.database import get_db
 from app.rag.pipeline import rag_pipeline
@@ -8,6 +9,8 @@ from app.providers.base import LLMProviderError
 from app.services.document_repository import (
     get_document,
 )
+
+logger = structlog.get_logger()
 
 
 router = APIRouter(
@@ -100,6 +103,11 @@ def ask(
 ):
 
     if request.document_id and not get_document(db, request.document_id):
+        logger.warning(
+            "rag_ask_document_not_found",
+            document_id=request.document_id,
+            question=request.question,
+        )
         raise HTTPException(status_code=404, detail="Document not found.")
 
     try:
@@ -109,6 +117,11 @@ def ask(
             document_id=request.document_id,
         )
     except LLMProviderError as exc:
+        logger.error(
+            "rag_ask_llm_provider_error",
+            question=request.question,
+            error=str(exc),
+        )
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="The local AI service is unavailable. Check Ollama and the configured model.",
@@ -133,6 +146,14 @@ def ask(
                 ),
             }
         )
+
+    logger.info(
+        "rag_ask_completed",
+        question=request.question,
+        top_k=request.top_k,
+        sources_count=len(enriched_sources),
+        document_id=request.document_id,
+    )
 
     return {
         "success": True,

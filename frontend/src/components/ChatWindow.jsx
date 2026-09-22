@@ -68,7 +68,7 @@ function ChatWindow({
         result.sources || []
       );
 
-    } catch (error) {
+    } catch {
 
       setMessages((current) => [
         ...current,

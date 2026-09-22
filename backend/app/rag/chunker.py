@@ -7,6 +7,7 @@ class TextChunk:
     document_id: str
     text: str
     chunk_index: int
+    page: int | None = None  # Page number if available from source document
 
 
 def normalize_text(text: str) -> str:
@@ -26,9 +27,11 @@ def create_chunks(
     document_id: str,
     chunk_size: int = 800,
     chunk_overlap: int = 120,
+    page_mapping: list[int] | None = None,
 ) -> list[TextChunk]:
     """
     Split text into overlapping character-based chunks.
+    Optionally assigns page numbers to chunks using page_mapping.
 
     Character-based chunking is intentionally simple for our
     first RAG implementation. We can improve it later.
@@ -62,12 +65,19 @@ def create_chunks(
         chunk_text = text[start:end].strip()
 
         if chunk_text:
+            # Determine page number for this chunk
+            page = None
+            if page_mapping and start < len(page_mapping):
+                # Use the page number at the start of the chunk
+                page = page_mapping[start]
+
             chunks.append(
                 TextChunk(
                     chunk_id=f"{document_id}_{chunk_index}",
                     document_id=document_id,
                     text=chunk_text,
                     chunk_index=chunk_index,
+                    page=page,
                 )
             )
 

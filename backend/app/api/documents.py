@@ -11,6 +11,7 @@ from fastapi import (
     status,
 )
 from sqlalchemy.orm import Session
+import structlog
 
 from app.db.database import get_db
 from app.config import get_settings
@@ -32,8 +33,11 @@ from app.services.document_service import (
     DocumentProcessingError,
     process_document,
     validate_file_content,
+    validate_filename,
 )
 from app.services.file_hash import calculate_file_hash
+
+logger = structlog.get_logger()
 
 
 router = APIRouter(
@@ -73,6 +77,14 @@ async def upload_document(
             status_code=400,
             detail="A filename is required.",
         )
+
+    try:
+        validate_filename(file.filename)
+    except DocumentProcessingError as exc:
+        raise HTTPException(
+            status_code=400,
+            detail=str(exc),
+        ) from exc
 
     extension = Path(
         file.filename
@@ -168,6 +180,13 @@ async def upload_document(
         document,
     )
 
+    logger.info(
+        "document_upload_started",
+        document_id=document_id,
+        filename=safe_filename,
+        file_size=len(content),
+    )
+
     try:
 
         result = process_document(
@@ -188,6 +207,7 @@ async def upload_document(
             rag_pipeline.index_document(
                 document_id=document_id,
                 text=result["text"],
+                page_mapping=result.get("page_mapping"),
             )
         )
 
@@ -205,34 +225,48 @@ async def upload_document(
             error_message=None,
         )
 
-    except DocumentProcessingError as exc:
+        logger.info(
+            "document_indexed_successfully",
+            document_id=document_id,
+            filename=safe_filename,
+            chunk_count=indexing_result.get("chunks", 0),
+            characters=result["characters"],
+        )
 
+    except DocumentProcessingError as exc:
         update_document(
             db,
             document,
             status="failed",
             error_message=str(exc),
         )
-
+        logger.error(
+            "document_processing_failed",
+            document_id=document_id,
+            filename=safe_filename,
+            error=str(exc),
+        )
         raise HTTPException(
             status_code=422,
             detail=str(exc),
         ) from exc
 
     except Exception as exc:
-
         update_document(
             db,
             document,
             status="failed",
             error_message=str(exc),
         )
-
+        logger.error(
+            "document_processing_error",
+            document_id=document_id,
+            filename=safe_filename,
+            error=str(exc),
+        )
         raise HTTPException(
             status_code=500,
-            detail=(
-                "Document processing failed."
-            ),
+            detail="Document processing failed.",
         ) from exc
 
     return document
@@ -247,6 +281,11 @@ def get_documents(
 ):
 
     documents = list_documents(db)
+
+    logger.info(
+        "documents_listed",
+        document_count=len(documents),
+    )
 
     return {
         "documents": documents,
@@ -270,10 +309,21 @@ def get_document_by_id(
 
     if document is None:
 
+        logger.warning(
+            "document_not_found",
+            document_id=document_id,
+        )
+
         raise HTTPException(
             status_code=404,
             detail="Document not found.",
         )
+
+    logger.info(
+        "document_retrieved",
+        document_id=document_id,
+        filename=document.filename,
+    )
 
     return document
 
@@ -292,6 +342,11 @@ def remove_document(
     )
 
     if document is None:
+
+        logger.warning(
+            "document_not_found_for_deletion",
+            document_id=document_id,
+        )
 
         raise HTTPException(
             status_code=404,
@@ -323,6 +378,12 @@ def remove_document(
     delete_document(
         db,
         document,
+    )
+
+    logger.info(
+        "document_deleted",
+        document_id=document_id,
+        filename=document.filename,
     )
 
     return {
