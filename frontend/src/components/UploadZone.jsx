@@ -45,15 +45,17 @@ function UploadZone({
         role="button"
         tabIndex={0}
         aria-label="Upload a PDF, DOCX, TXT, or Markdown document"
-        className={`upload-area ${dragging ? "dragover" : ""}`}
+        className={`upload-area ${dragging ? "dragover" : ""} ${uploading ? "uploading" : ""}`}
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
-        onClick={() => inputRef.current?.click()}
+        onClick={() => !uploading && inputRef.current?.click()}
         onKeyDown={(event) => {
           if (event.key === "Enter" || event.key === " ") {
             event.preventDefault();
-            inputRef.current?.click();
+            if (!uploading) {
+              inputRef.current?.click();
+            }
           }
         }}
       >
@@ -65,10 +67,15 @@ function UploadZone({
           onChange={(event) =>
             handleFiles(event.target.files)
           }
+          disabled={uploading}
         />
 
         <div className="upload-icon">
-          {uploading ? "⏳" : "📤"}
+          {uploading ? (
+            <div className="spinner"></div>
+          ) : (
+            "📤"
+          )}
         </div>
 
         <div className="upload-text">
@@ -82,6 +89,12 @@ function UploadZone({
             ? "Extracting, embedding and indexing"
             : "or click to browse"}
         </div>
+
+        {!uploading && (
+          <div className="upload-formats">
+            PDF · DOCX · TXT · Markdown
+          </div>
+        )}
       </div>
     </div>
   );

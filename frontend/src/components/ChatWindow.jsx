@@ -18,6 +18,9 @@ function ChatWindow({
   const [lastSources, setLastSources] =
     useState([]);
 
+  const [showRetrievalDetails, setShowRetrievalDetails] =
+    useState(false);
+
   const messagesEndRef =
     useRef(null);
 
@@ -75,7 +78,7 @@ function ChatWindow({
         {
           role: "assistant",
           content:
-            "Sorry, I couldn't process that question. Please check that the backend and local AI model are running.",
+            "I couldn't process that question. Please check that the backend and local AI model are running.",
         },
       ]);
 
@@ -234,8 +237,15 @@ function ChatWindow({
                 </div>
 
                 <div className="message-content">
-                  <div className="message-bubble">
-                    Searching your documents...
+                  <div className="message-bubble loading">
+                    <div className="loading-dots">
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                    </div>
+                    <div className="loading-text">
+                      Searching your documents...
+                    </div>
                   </div>
                 </div>
               </div>
@@ -254,6 +264,33 @@ function ChatWindow({
                       source={source}
                     />
                   )
+                )}
+
+                <button
+                  className="retrieval-toggle"
+                  onClick={() => setShowRetrievalDetails(!showRetrievalDetails)}
+                >
+                  {showRetrievalDetails ? "Hide retrieval details" : "Show retrieval details"}
+                </button>
+
+                {showRetrievalDetails && (
+                  <div className="retrieval-details">
+                    <div className="retrieval-details-header">
+                      Retrieval Details
+                    </div>
+                    <div className="retrieval-list">
+                      {lastSources.map((source, index) => (
+                        <div key={index} className="retrieval-item">
+                          <span className="retrieval-filename">
+                            {source.filename || source.document_id}
+                          </span>
+                          <span className="retrieval-score">
+                            {(source.score * 100).toFixed(0)}%
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 )}
               </div>
             )}

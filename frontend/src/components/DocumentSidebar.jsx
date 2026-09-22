@@ -32,16 +32,19 @@ function DocumentSidebar({
       <div className="document-list">
         {documents.length === 0 ? (
           <div className="empty-documents">
-            <span>📚</span>
+            <span className="empty-icon">📚</span>
 
             <p>
               No documents yet.
             </p>
 
             <small>
-              Upload your first document to
-              start asking questions.
+              Upload a PDF, DOCX, TXT, or Markdown file to start asking questions.
             </small>
+
+            <div className="empty-hint">
+              <span>Upload → Retrieve → Ground → Answer → Cite</span>
+            </div>
           </div>
         ) : (
           documents.map((document) => (
@@ -82,13 +85,22 @@ function DocumentSidebar({
                   {document.filename}
                 </strong>
 
-                <span>
-                  {document.chunk_count} chunks
-                  {" · "}
-                  {formatBytes(
-                    document.file_size_bytes
-                  )}
-                </span>
+                <div className="document-meta">
+                  <span className="meta-item">
+                    {document.chunk_count} chunks
+                  </span>
+                  <span className="meta-separator">·</span>
+                  <span className="meta-item">
+                    {formatBytes(
+                      document.file_size_bytes
+                    )}
+                  </span>
+                </div>
+
+                <div className="document-status">
+                  <span className="status-dot ready"></span>
+                  Ready
+                </div>
               </div>
 
               <button
@@ -103,7 +115,7 @@ function DocumentSidebar({
                   );
                 }}
               >
-                ×
+                🗑
               </button>
             </div>
           ))
