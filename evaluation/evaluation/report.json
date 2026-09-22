@@ -1,0 +1,767 @@
+{
+  "results": [
+    {
+      "id": "q01",
+      "question": "What are the origins of AI?",
+      "answer": "Artificial intelligence began as a formal scientific area in the 1950s. At the Dartmouth conference in 1956, John McCarthy and other researchers gathered to discuss the idea that machines could simulate aspects of intelligence. John McCarthy was a central figure, and the conference helped define the field of AI.",
+      "sources": [
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_0",
+          "chunk_index": 0,
+          "score": 0.6943111419677734,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        },
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_4",
+          "chunk_index": 4,
+          "score": 0.5046652555465698,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        },
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_3",
+          "chunk_index": 3,
+          "score": 0.44961878657341003,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        },
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_1",
+          "chunk_index": 1,
+          "score": 0.3587232232093811,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        },
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_2",
+          "chunk_index": 2,
+          "score": 0.31748640537261963,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        }
+      ],
+      "hit_at_1": 0.0,
+      "hit_at_3": 0.0,
+      "hit_at_5": 0.0,
+      "keyword_match": 0.3333333333333333,
+      "passed": false,
+      "retrieval_failure": true
+    },
+    {
+      "id": "q02",
+      "question": "What happened at the Dartmouth conference?",
+      "answer": "At the Dartmouth conference in 1956, John McCarthy and other researchers gathered to discuss the idea that machines could simulate aspects of intelligence. The conference helped define the field of AI.",
+      "sources": [
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_0",
+          "chunk_index": 0,
+          "score": 0.31745800375938416,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        }
+      ],
+      "hit_at_1": 0.0,
+      "hit_at_3": 0.0,
+      "hit_at_5": 0.0,
+      "keyword_match": 1.0,
+      "passed": false,
+      "retrieval_failure": true
+    },
+    {
+      "id": "q03",
+      "question": "Who is John McCarthy and why is he important in AI history?",
+      "answer": "John McCarthy is a central figure in the history of artificial intelligence. He was a key organizer of the Dartmouth conference in 1956, which is considered the birthplace of AI as a formal scientific area. This conference helped define the field and set the stage for early research and development in AI.",
+      "sources": [
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_0",
+          "chunk_index": 0,
+          "score": 0.6764810085296631,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        },
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_4",
+          "chunk_index": 4,
+          "score": 0.4966740608215332,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        },
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_3",
+          "chunk_index": 3,
+          "score": 0.43474137783050537,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        },
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_1",
+          "chunk_index": 1,
+          "score": 0.411610871553421,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        },
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_2",
+          "chunk_index": 2,
+          "score": 0.33797478675842285,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        }
+      ],
+      "hit_at_1": 0.0,
+      "hit_at_3": 0.0,
+      "hit_at_5": 0.0,
+      "keyword_match": 1.0,
+      "passed": false,
+      "retrieval_failure": true
+    },
+    {
+      "id": "q04",
+      "question": "What is symbolic AI?",
+      "answer": "Symbolic AI used explicit rules, representations, and logical reasoning to encode knowledge. A famous language for this work was LISP, which was built around symbolic list processing and recursive computation.",
+      "sources": [
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_0",
+          "chunk_index": 0,
+          "score": 0.5566677451133728,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        },
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_4",
+          "chunk_index": 4,
+          "score": 0.5335274934768677,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        },
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_3",
+          "chunk_index": 3,
+          "score": 0.3588513731956482,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        },
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_1",
+          "chunk_index": 1,
+          "score": 0.30347415804862976,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        }
+      ],
+      "hit_at_1": 0.0,
+      "hit_at_3": 0.0,
+      "hit_at_5": 0.0,
+      "keyword_match": 1.0,
+      "passed": false,
+      "retrieval_failure": true
+    },
+    {
+      "id": "q05",
+      "question": "What programming language was associated with early symbolic AI and list processing?",
+      "answer": "The programming language associated with early symbolic AI and list processing was LISP.",
+      "sources": [
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_0",
+          "chunk_index": 0,
+          "score": 0.6567481756210327,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        },
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_4",
+          "chunk_index": 4,
+          "score": 0.4624265432357788,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        },
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_1",
+          "chunk_index": 1,
+          "score": 0.3984591066837311,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        },
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_2",
+          "chunk_index": 2,
+          "score": 0.3584066331386566,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        }
+      ],
+      "hit_at_1": 0.0,
+      "hit_at_3": 0.0,
+      "hit_at_5": 0.0,
+      "keyword_match": 1.0,
+      "passed": false,
+      "retrieval_failure": true
+    },
+    {
+      "id": "q06",
+      "question": "What are AI winters?",
+      "answer": "AI winters refer to periods of reduced investment and confidence in artificial intelligence that followed the initial optimism of early AI research. During these times, some AI projects failed to meet expectations, leading to funding difficulties and a decrease in interest in the field.",
+      "sources": [
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_0",
+          "chunk_index": 0,
+          "score": 0.41159284114837646,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        },
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_3",
+          "chunk_index": 3,
+          "score": 0.3650907874107361,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        },
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_4",
+          "chunk_index": 4,
+          "score": 0.3438152074813843,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        }
+      ],
+      "hit_at_1": 0.0,
+      "hit_at_3": 0.0,
+      "hit_at_5": 0.0,
+      "keyword_match": 1.0,
+      "passed": false,
+      "retrieval_failure": true
+    },
+    {
+      "id": "q07",
+      "question": "What are expert systems?",
+      "answer": "Expert systems are artificial intelligence systems designed to imitate expert reasoning by using hand-coded rules and the knowledge acquisition bottleneck. They require specialists to convert domain knowledge into formal rules, which is a slow and expensive process.",
+      "sources": [
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_1",
+          "chunk_index": 1,
+          "score": 0.5283372402191162,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        },
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_4",
+          "chunk_index": 4,
+          "score": 0.4884336590766907,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        },
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_0",
+          "chunk_index": 0,
+          "score": 0.3528691530227661,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        },
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_2",
+          "chunk_index": 2,
+          "score": 0.32036760449409485,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        },
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_3",
+          "chunk_index": 3,
+          "score": 0.3056313395500183,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        }
+      ],
+      "hit_at_1": 0.0,
+      "hit_at_3": 0.0,
+      "hit_at_5": 0.0,
+      "keyword_match": 1.0,
+      "passed": false,
+      "retrieval_failure": true
+    },
+    {
+      "id": "q08",
+      "question": "What is the knowledge acquisition bottleneck?",
+      "answer": "The knowledge acquisition bottleneck refers to the slow and expensive process of converting domain knowledge into formal rules that expert systems depend on.",
+      "sources": [
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_1",
+          "chunk_index": 1,
+          "score": 0.5565177798271179,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        },
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_2",
+          "chunk_index": 2,
+          "score": 0.42815589904785156,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        },
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_4",
+          "chunk_index": 4,
+          "score": 0.3379477262496948,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        },
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_3",
+          "chunk_index": 3,
+          "score": 0.3086985945701599,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        }
+      ],
+      "hit_at_1": 0.0,
+      "hit_at_3": 0.0,
+      "hit_at_5": 0.0,
+      "keyword_match": 0.6666666666666666,
+      "passed": false,
+      "retrieval_failure": true
+    },
+    {
+      "id": "q09",
+      "question": "What was Deep Blue?",
+      "answer": "I could not find relevant information in the indexed documents.",
+      "sources": [],
+      "hit_at_1": 0.0,
+      "hit_at_3": 0.0,
+      "hit_at_5": 0.0,
+      "keyword_match": 0.0,
+      "passed": false,
+      "retrieval_failure": true
+    },
+    {
+      "id": "q10",
+      "question": "What changed with the World Wide Web and the data era?",
+      "answer": "With the World Wide Web and the data era, data became much more available, making statistical learning more practical.",
+      "sources": [
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_2",
+          "chunk_index": 2,
+          "score": 0.42204880714416504,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        },
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_1",
+          "chunk_index": 1,
+          "score": 0.3802759349346161,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        }
+      ],
+      "hit_at_1": 0.0,
+      "hit_at_3": 0.0,
+      "hit_at_5": 0.0,
+      "keyword_match": 0.6666666666666666,
+      "passed": false,
+      "retrieval_failure": true
+    },
+    {
+      "id": "q11",
+      "question": "What is classical machine learning?",
+      "answer": "Classical machine learning used statistical patterns, feature engineering, and training examples to solve tasks.",
+      "sources": [
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_2",
+          "chunk_index": 2,
+          "score": 0.6453037261962891,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        },
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_1",
+          "chunk_index": 1,
+          "score": 0.4097749590873718,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        },
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_0",
+          "chunk_index": 0,
+          "score": 0.38259899616241455,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        },
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_4",
+          "chunk_index": 4,
+          "score": 0.33652937412261963,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        },
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_3",
+          "chunk_index": 3,
+          "score": 0.3086501955986023,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        }
+      ],
+      "hit_at_1": 0.0,
+      "hit_at_3": 0.0,
+      "hit_at_5": 0.0,
+      "keyword_match": 0.3333333333333333,
+      "passed": false,
+      "retrieval_failure": true
+    },
+    {
+      "id": "q12",
+      "question": "What is deep learning?",
+      "answer": "Deep learning grew from neural networks and representation learning. It became widely visible through AlexNet in 2012, which showed that neural network training could produce strong results in image recognition. Deep learning later expanded into many domains, including speech, language, and prediction.",
+      "sources": [
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_2",
+          "chunk_index": 2,
+          "score": 0.6376376152038574,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        },
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_3",
+          "chunk_index": 3,
+          "score": 0.33455803990364075,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        },
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_1",
+          "chunk_index": 1,
+          "score": 0.3301323652267456,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        },
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_0",
+          "chunk_index": 0,
+          "score": 0.30805322527885437,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        }
+      ],
+      "hit_at_1": 0.0,
+      "hit_at_3": 0.0,
+      "hit_at_5": 0.0,
+      "keyword_match": 1.0,
+      "passed": false,
+      "retrieval_failure": true
+    },
+    {
+      "id": "q13",
+      "question": "What was AlexNet known for?",
+      "answer": "AlexNet was known for showing that neural network training could produce strong results in image recognition.",
+      "sources": [
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_2",
+          "chunk_index": 2,
+          "score": 0.37482067942619324,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        },
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_0",
+          "chunk_index": 0,
+          "score": 0.36042216420173645,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        },
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_1",
+          "chunk_index": 1,
+          "score": 0.34000474214553833,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        },
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_3",
+          "chunk_index": 3,
+          "score": 0.3273387849330902,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        }
+      ],
+      "hit_at_1": 0.0,
+      "hit_at_3": 0.0,
+      "hit_at_5": 0.0,
+      "keyword_match": 0.6666666666666666,
+      "passed": false,
+      "retrieval_failure": true
+    },
+    {
+      "id": "q14",
+      "question": "What are GANs?",
+      "answer": "I could not find relevant information in the indexed documents.",
+      "sources": [],
+      "hit_at_1": 0.0,
+      "hit_at_3": 0.0,
+      "hit_at_5": 0.0,
+      "keyword_match": 0.0,
+      "passed": false,
+      "retrieval_failure": true
+    },
+    {
+      "id": "q15",
+      "question": "What was AlphaGo?",
+      "answer": "AlphaGo was a program that demonstrated the power of deep learning and search techniques in the game of Go, reaching a significant milestone in board games.",
+      "sources": [
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_3",
+          "chunk_index": 3,
+          "score": 0.4658247232437134,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        }
+      ],
+      "hit_at_1": 0.0,
+      "hit_at_3": 0.0,
+      "hit_at_5": 0.0,
+      "keyword_match": 1.0,
+      "passed": false,
+      "retrieval_failure": true
+    },
+    {
+      "id": "q16",
+      "question": "What societal risks are associated with AI?",
+      "answer": "AI brings new societal risks, including bias that can appear when data, culture, or institutions reflect unequal assumptions. Cultural bias can affect how systems represent people, languages, and communities.",
+      "sources": [
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_4",
+          "chunk_index": 4,
+          "score": 0.5999203324317932,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        },
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_3",
+          "chunk_index": 3,
+          "score": 0.5863978862762451,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        },
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_0",
+          "chunk_index": 0,
+          "score": 0.5167076587677002,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        },
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_1",
+          "chunk_index": 1,
+          "score": 0.3544217348098755,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        }
+      ],
+      "hit_at_1": 0.0,
+      "hit_at_3": 0.0,
+      "hit_at_5": 0.0,
+      "keyword_match": 0.6666666666666666,
+      "passed": false,
+      "retrieval_failure": true
+    },
+    {
+      "id": "q17",
+      "question": "What is cultural bias in AI?",
+      "answer": "Cultural bias in AI can affect how systems represent people, languages, and communities.",
+      "sources": [
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_3",
+          "chunk_index": 3,
+          "score": 0.5902448892593384,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        },
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_4",
+          "chunk_index": 4,
+          "score": 0.5412831902503967,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        },
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_0",
+          "chunk_index": 0,
+          "score": 0.4906839430332184,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        },
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_1",
+          "chunk_index": 1,
+          "score": 0.3214634656906128,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        }
+      ],
+      "hit_at_1": 0.0,
+      "hit_at_3": 0.0,
+      "hit_at_5": 0.0,
+      "keyword_match": 0.6666666666666666,
+      "passed": false,
+      "retrieval_failure": true
+    },
+    {
+      "id": "q18",
+      "question": "What is the EU AI Act?",
+      "answer": "The EU AI Act is a governance framework proposed by the European Union to regulate AI according to levels of risk and accountability. It aims to align AI development with safety, transparency, and rights.",
+      "sources": [
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_3",
+          "chunk_index": 3,
+          "score": 0.49326565861701965,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        },
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_0",
+          "chunk_index": 0,
+          "score": 0.4218801259994507,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        },
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_4",
+          "chunk_index": 4,
+          "score": 0.4207683205604553,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        }
+      ],
+      "hit_at_1": 0.0,
+      "hit_at_3": 0.0,
+      "hit_at_5": 0.0,
+      "keyword_match": 0.6666666666666666,
+      "passed": false,
+      "retrieval_failure": true
+    },
+    {
+      "id": "q19",
+      "question": "What is AGI?",
+      "answer": "I could not find relevant information in the indexed documents.",
+      "sources": [],
+      "hit_at_1": 0.0,
+      "hit_at_3": 0.0,
+      "hit_at_5": 0.0,
+      "keyword_match": 0.0,
+      "passed": false,
+      "retrieval_failure": true
+    },
+    {
+      "id": "q20",
+      "question": "How should AI governance and future progress be handled?",
+      "answer": "AI governance should balance innovation, safety, accountability, and public trust. The future of AI depends on governance, transparent standards, and responsible oversight.",
+      "sources": [
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_4",
+          "chunk_index": 4,
+          "score": 0.8005049228668213,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        },
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_3",
+          "chunk_index": 3,
+          "score": 0.5267607569694519,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        },
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_0",
+          "chunk_index": 0,
+          "score": 0.47220849990844727,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        },
+        {
+          "document_id": "evaluation_document.txt",
+          "chunk_id": "evaluation_document.txt_1",
+          "chunk_index": 1,
+          "score": 0.4294254183769226,
+          "page": null,
+          "filename": "evaluation_document.txt"
+        }
+      ],
+      "hit_at_1": 0.0,
+      "hit_at_3": 0.0,
+      "hit_at_5": 0.0,
+      "keyword_match": 1.0,
+      "passed": false,
+      "retrieval_failure": true
+    }
+  ],
+  "metrics": {
+    "hit_at_1": 0.0,
+    "hit_at_3": 0.0,
+    "hit_at_5": 0.0,
+    "keyword_match_rate": 68.33333333333333,
+    "questions_passed": 0,
+    "questions_failed": 20,
+    "retrieval_failures": 20
+  },
+  "provider_warning": null
+}
