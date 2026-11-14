@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import Header from "./components/Header";
 import DocumentSidebar from "./components/DocumentSidebar";
@@ -30,19 +30,21 @@ function App() {
     useState(null);
 
 
-  useEffect(() => {
-    async function loadDocuments() {
-      try {
-        setError(null);
-        const data = await getDocuments();
-        setDocuments(data.documents || []);
-      } catch (err) {
-        console.error(err);
-        setError("Unable to connect to the CloudRAG backend.");
-      }
+  const loadDocuments = useCallback(async () => {
+    try {
+      setError(null);
+      const data = await getDocuments();
+      setDocuments(data.documents || []);
+    } catch (err) {
+      console.error(err);
+      setError("Unable to connect to the CloudRAG backend.");
     }
-    loadDocuments();
   }, []);
+
+
+  useEffect(() => {
+    loadDocuments();
+  }, [loadDocuments]);
 
 
   async function handleUpload(file) {
@@ -53,37 +55,41 @@ function App() {
 
       setError(null);
 
-      const result =
-        await uploadDocument(file);
+      let result;
 
-      const uploaded =
-        result;
+      try {
+
+        result =
+          await uploadDocument(file);
+
+      } catch (err) {
+
+        console.error(err);
+
+        const detail =
+          err.response?.data?.detail;
+
+        if (
+          typeof detail === "object" &&
+          detail?.message
+        ) {
+          setError(detail.message);
+        } else {
+          setError(
+            typeof detail === "string"
+              ? detail
+              : "Document upload failed."
+          );
+        }
+
+        return;
+      }
 
       await loadDocuments();
 
       setSelectedDocument(
-        uploaded.document_id
+        result.document_id
       );
-
-    } catch (err) {
-
-      console.error(err);
-
-      const detail =
-        err.response?.data?.detail;
-
-      if (
-        typeof detail === "object" &&
-        detail?.message
-      ) {
-        setError(detail.message);
-      } else {
-        setError(
-          typeof detail === "string"
-            ? detail
-            : "Document upload failed."
-        );
-      }
 
     } finally {
 
