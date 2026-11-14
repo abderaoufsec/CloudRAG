@@ -10,6 +10,7 @@ from fastapi import (
     UploadFile,
     status,
 )
+from fastapi.concurrency import run_in_threadpool
 from sqlalchemy.orm import Session
 import structlog
 
@@ -194,8 +195,9 @@ async def upload_document(
 
     destination.write_bytes(content)
 
-    file_hash = calculate_file_hash(
-        destination
+    file_hash = await run_in_threadpool(
+        calculate_file_hash,
+        destination,
     )
 
     existing_document = get_document_by_hash(
@@ -262,8 +264,9 @@ async def upload_document(
 
     try:
 
-        result = process_document(
-            destination
+        result = await run_in_threadpool(
+            process_document,
+            destination,
         )
 
         processed_text_path = (
@@ -276,12 +279,11 @@ async def upload_document(
             encoding="utf-8",
         )
 
-        indexing_result = (
-            rag_pipeline.index_document(
-                document_id=document_id,
-                text=result["text"],
-                page_mapping=result.get("page_mapping"),
-            )
+        indexing_result = await run_in_threadpool(
+            rag_pipeline.index_document,
+            document_id=document_id,
+            text=result["text"],
+            page_mapping=result.get("page_mapping"),
         )
 
         update_document(

@@ -96,6 +96,66 @@ def test_failed_upload_is_cleaned_up_and_can_be_retried(
     assert response.status_code == 201
 
 
+def test_processing_runs_off_event_loop_thread(
+    documents_client,
+    monkeypatch,
+):
+    import threading
+
+    import app.api.documents as documents_api
+
+    event_loop_thread = {}
+    worker_thread = {}
+
+    original_validate = documents_api.validate_file_content
+
+    def record_validate(extension, content):
+        event_loop_thread["thread"] = threading.current_thread()
+        return original_validate(extension, content)
+
+    def fake_process(path):
+        worker_thread["thread"] = threading.current_thread()
+        return {
+            "document_id": "ignored",
+            "filename": path.name,
+            "file_type": path.suffix,
+            "file_size_bytes": path.stat().st_size,
+            "characters": 4,
+            "words": 1,
+            "pages": 1,
+            "text": "test",
+            "page_mapping": [1, 1, 1, 1],
+        }
+
+    monkeypatch.setattr(
+        documents_api,
+        "validate_file_content",
+        record_validate,
+    )
+    monkeypatch.setattr(
+        documents_api,
+        "process_document",
+        fake_process,
+    )
+
+    response = documents_client.post(
+        "/api/documents/upload",
+        files={
+            "file": (
+                "thread.txt",
+                b"test",
+                "text/plain",
+            )
+        },
+    )
+
+    assert response.status_code == 201
+    assert (
+        event_loop_thread["thread"]
+        is not worker_thread["thread"]
+    )
+
+
 def test_reject_unsupported_file(documents_client):
     response = documents_client.post(
         "/api/documents/upload",
