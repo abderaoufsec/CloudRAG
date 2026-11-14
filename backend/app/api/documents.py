@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from uuid import uuid4
 
@@ -60,6 +60,61 @@ SUPPORTED_EXTENSIONS = {
     ".txt",
     ".md",
 }
+
+# A document stuck in "processing" longer than this is treated as abandoned.
+STALE_PROCESSING_AGE = timedelta(minutes=10)
+
+
+def _delete_document_artifacts(
+    db: Session,
+    document: Document,
+) -> None:
+    """Remove vectors, files and the DB row for a document."""
+
+    document_id = document.document_id
+
+    try:
+        rag_pipeline.delete_document(document_id)
+    except Exception as exc:
+        logger.warning(
+            "document_cleanup_vectors_failed",
+            document_id=document_id,
+            error=str(exc),
+        )
+
+    (
+        DOCUMENTS_DIR
+        / f"{document_id}{document.file_type}"
+    ).unlink(missing_ok=True)
+
+    (
+        PROCESSED_DIR
+        / f"{document_id}.txt"
+    ).unlink(missing_ok=True)
+
+    delete_document(
+        db,
+        document,
+    )
+
+
+def _can_reupload(document: Document) -> bool:
+    """Return True when an existing duplicate may be replaced."""
+
+    if document.status == "failed":
+        return True
+
+    if document.status != "processing":
+        return False
+
+    uploaded_at = document.uploaded_at
+    if uploaded_at.tzinfo is None:
+        uploaded_at = uploaded_at.replace(tzinfo=timezone.utc)
+
+    return (
+        datetime.now(timezone.utc) - uploaded_at
+        > STALE_PROCESSING_AGE
+    )
 
 
 @router.post(
@@ -150,18 +205,36 @@ async def upload_document(
 
     if existing_document:
 
-        destination.unlink(
-            missing_ok=True
-        )
+        if _can_reupload(existing_document):
 
-        raise HTTPException(
-            status_code=409,
-            detail={
-                "message": "This file has already been uploaded.",
-                "document_id": existing_document.document_id,
-                "filename": existing_document.filename,
-            },
-        )
+            previous_id = existing_document.document_id
+            previous_status = existing_document.status
+
+            _delete_document_artifacts(
+                db,
+                existing_document,
+            )
+
+            logger.info(
+                "stale_document_replaced",
+                document_id=previous_id,
+                status=previous_status,
+            )
+
+        else:
+
+            destination.unlink(
+                missing_ok=True
+            )
+
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "message": "This file has already been uploaded.",
+                    "document_id": existing_document.document_id,
+                    "filename": existing_document.filename,
+                },
+            )
 
     document = Document(
         document_id=document_id,
@@ -234,17 +307,15 @@ async def upload_document(
         )
 
     except DocumentProcessingError as exc:
-        update_document(
-            db,
-            document,
-            status="failed",
-            error_message=str(exc),
-        )
         logger.error(
             "document_processing_failed",
             document_id=document_id,
             filename=safe_filename,
             error=str(exc),
+        )
+        _delete_document_artifacts(
+            db,
+            document,
         )
         raise HTTPException(
             status_code=422,
@@ -252,17 +323,15 @@ async def upload_document(
         ) from exc
 
     except Exception as exc:
-        update_document(
-            db,
-            document,
-            status="failed",
-            error_message=str(exc),
-        )
         logger.error(
             "document_processing_error",
             document_id=document_id,
             filename=safe_filename,
             error=str(exc),
+        )
+        _delete_document_artifacts(
+            db,
+            document,
         )
         raise HTTPException(
             status_code=500,

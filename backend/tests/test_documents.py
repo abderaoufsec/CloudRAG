@@ -33,6 +33,69 @@ def test_upload_txt(documents_client):
     assert data["status"] == "indexed"
 
 
+def test_failed_upload_is_cleaned_up_and_can_be_retried(
+    documents_client,
+    monkeypatch,
+):
+    import app.api.documents as documents_api
+
+    pipeline_class = type(documents_api.rag_pipeline)
+
+    def failing_index(*args, **kwargs):
+        raise RuntimeError("index exploded")
+
+    monkeypatch.setattr(
+        documents_api.rag_pipeline,
+        "index_document",
+        failing_index,
+    )
+
+    content = b"CloudRAG failed upload cleanup test."
+
+    response = documents_client.post(
+        "/api/documents/upload",
+        files={
+            "file": (
+                "retry.txt",
+                content,
+                "text/plain",
+            )
+        },
+    )
+
+    assert response.status_code == 500
+
+    listing = documents_client.get(
+        "/api/documents"
+    )
+
+    assert listing.json()["total"] == 0
+
+    if documents_api.DOCUMENTS_DIR.exists():
+        assert list(
+            documents_api.DOCUMENTS_DIR.iterdir()
+        ) == []
+
+    monkeypatch.setattr(
+        documents_api,
+        "rag_pipeline",
+        pipeline_class(),
+    )
+
+    response = documents_client.post(
+        "/api/documents/upload",
+        files={
+            "file": (
+                "retry.txt",
+                content,
+                "text/plain",
+            )
+        },
+    )
+
+    assert response.status_code == 201
+
+
 def test_reject_unsupported_file(documents_client):
     response = documents_client.post(
         "/api/documents/upload",
