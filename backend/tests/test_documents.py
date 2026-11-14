@@ -1,4 +1,8 @@
+import asyncio
 from pathlib import Path
+
+import pytest
+from fastapi import HTTPException
 
 from app.services.document_service import (
     DocumentProcessingError,
@@ -154,6 +158,76 @@ def test_processing_runs_off_event_loop_thread(
         event_loop_thread["thread"]
         is not worker_thread["thread"]
     )
+
+
+def test_upload_exceeding_limit_returns_413(
+    documents_client,
+    monkeypatch,
+):
+    import app.api.documents as documents_api
+
+    monkeypatch.setattr(
+        documents_api,
+        "MAX_FILE_SIZE",
+        10,
+    )
+
+    response = documents_client.post(
+        "/api/documents/upload",
+        files={
+            "file": (
+                "big.txt",
+                b"x" * 100,
+                "text/plain",
+            )
+        },
+    )
+
+    assert response.status_code == 413
+    assert "limit" in response.json()["detail"].lower()
+    assert not documents_api.DOCUMENTS_DIR.exists()
+
+
+def test_size_check_aborts_before_reading_whole_stream(
+    monkeypatch,
+):
+    import app.api.documents as documents_api
+
+    class FakeUpload:
+        filename = "big.txt"
+
+        def __init__(self, total):
+            self.total = total
+            self.consumed = 0
+
+        async def read(self, size=-1):
+            if size is None or size < 0:
+                size = self.total - self.consumed
+            count = min(
+                size,
+                self.total - self.consumed,
+            )
+            self.consumed += count
+            return b"x" * count
+
+    monkeypatch.setattr(
+        documents_api,
+        "MAX_FILE_SIZE",
+        10,
+    )
+
+    fake = FakeUpload(5 * 1024 * 1024)
+
+    with pytest.raises(HTTPException) as excinfo:
+        asyncio.run(
+            documents_api.upload_document(
+                fake,
+                None,
+            )
+        )
+
+    assert excinfo.value.status_code == 413
+    assert fake.consumed < fake.total
 
 
 def test_reject_unsupported_file(documents_client):

@@ -156,13 +156,27 @@ async def upload_document(
             ),
         )
 
-    content = await file.read()
+    content = bytearray()
 
-    if len(content) > MAX_FILE_SIZE:
-        raise HTTPException(
-            status_code=413,
-            detail="File exceeds the 10 MB limit.",
-        )
+    while True:
+
+        chunk = await file.read(1024 * 1024)
+
+        if not chunk:
+            break
+
+        content.extend(chunk)
+
+        if len(content) > MAX_FILE_SIZE:
+            raise HTTPException(
+                status_code=413,
+                detail=(
+                    "File exceeds the "
+                    f"{get_settings().max_upload_size_mb} MB limit."
+                ),
+            )
+
+    content = bytes(content)
 
     try:
         validate_file_content(extension, content)
