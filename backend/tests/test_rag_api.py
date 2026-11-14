@@ -4,6 +4,27 @@ from app.main import app
 from app.providers.base import LLMProviderError
 
 
+def test_index_endpoint_is_removed(monkeypatch):
+    import app.api.rag as rag_api
+
+    monkeypatch.setattr(
+        rag_api.rag_pipeline,
+        "index_document",
+        lambda **_kwargs: {"chunks": 1},
+    )
+
+    with TestClient(app) as client:
+        response = client.post(
+            "/api/rag/index",
+            json={
+                "document_id": "poisoned",
+                "text": "arbitrary text",
+            },
+        )
+
+    assert response.status_code in (404, 405)
+
+
 def test_ollama_failure_is_returned_as_a_safe_service_error(monkeypatch):
     import app.api.rag as rag_api
 

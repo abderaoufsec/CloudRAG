@@ -19,15 +19,6 @@ router = APIRouter(
 )
 
 
-class IndexRequest(BaseModel):
-    document_id: str
-
-    text: str = Field(
-        min_length=1,
-        description="Extracted document text.",
-    )
-
-
 class SearchRequest(BaseModel):
     query: str = Field(
         min_length=1,
@@ -59,24 +50,6 @@ class AskRequest(BaseModel):
         default=None,
         description="Optionally restrict retrieval to one indexed document.",
     )
-
-
-@router.post("/index")
-def index_document(
-    request: IndexRequest,
-):
-    result = rag_pipeline.index_document(
-        document_id=request.document_id,
-        text=request.text,
-    )
-
-    return {
-        "success": True,
-        "message": (
-            "Document indexed successfully."
-        ),
-        "result": result,
-    }
 
 
 @router.post("/search")
