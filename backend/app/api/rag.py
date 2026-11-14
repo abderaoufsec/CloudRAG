@@ -8,6 +8,7 @@ from app.rag.pipeline import rag_pipeline
 from app.providers.base import LLMProviderError
 from app.services.document_repository import (
     get_document,
+    get_documents_by_ids,
 )
 
 logger = structlog.get_logger()
@@ -17,15 +18,6 @@ router = APIRouter(
     prefix="/api/rag",
     tags=["rag"],
 )
-
-
-class IndexRequest(BaseModel):
-    document_id: str
-
-    text: str = Field(
-        min_length=1,
-        description="Extracted document text.",
-    )
 
 
 class SearchRequest(BaseModel):
@@ -38,6 +30,11 @@ class SearchRequest(BaseModel):
         default=5,
         ge=1,
         le=20,
+    )
+
+    document_id: str | None = Field(
+        default=None,
+        description="Optionally restrict search to one indexed document.",
     )
 
 
@@ -61,32 +58,24 @@ class AskRequest(BaseModel):
     )
 
 
-@router.post("/index")
-def index_document(
-    request: IndexRequest,
-):
-    result = rag_pipeline.index_document(
-        document_id=request.document_id,
-        text=request.text,
-    )
-
-    return {
-        "success": True,
-        "message": (
-            "Document indexed successfully."
-        ),
-        "result": result,
-    }
-
-
 @router.post("/search")
 def search(
     request: SearchRequest,
+    db: Session = Depends(get_db),
 ):
+
+    if request.document_id and not get_document(db, request.document_id):
+        logger.warning(
+            "rag_search_document_not_found",
+            document_id=request.document_id,
+            query_length=len(request.query),
+        )
+        raise HTTPException(status_code=404, detail="Document not found.")
 
     results = rag_pipeline.search(
         query=request.query,
         top_k=request.top_k,
+        document_id=request.document_id,
     )
 
     return {
@@ -127,25 +116,29 @@ def ask(
             detail="The local AI service is unavailable. Check Ollama and the configured model.",
         ) from exc
 
-    enriched_sources = []
+    document_ids = {
+        source["document_id"]
+        for source in result["sources"]
+    }
 
-    for source in result["sources"]:
+    documents_by_id = get_documents_by_ids(
+        db,
+        list(document_ids),
+    )
 
-        document = get_document(
-            db,
-            source["document_id"],
-        )
-
-        enriched_sources.append(
-            {
-                **source,
-                "filename": (
-                    document.filename
-                    if document
-                    else source["document_id"]
-                ),
-            }
-        )
+    enriched_sources = [
+        {
+            **source,
+            "filename": (
+                documents_by_id[
+                    source["document_id"]
+                ].filename
+                if source["document_id"] in documents_by_id
+                else source["document_id"]
+            ),
+        }
+        for source in result["sources"]
+    ]
 
     logger.info(
         "rag_ask_completed",

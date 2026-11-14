@@ -4,6 +4,68 @@ from app.rag.chunker import create_chunks
 from app.rag.pipeline import RAGPipeline
 
 
+def test_ask_sources_include_text(monkeypatch):
+    pipeline = object.__new__(RAGPipeline)
+    pipeline.vector_store = Mock()
+
+    long_text = "word " * 200
+    pipeline.vector_store.search.return_value = [
+        {
+            "document_id": "doc",
+            "chunk_id": "doc_0",
+            "chunk_index": 0,
+            "score": 0.9,
+            "text": long_text,
+        }
+    ]
+
+    monkeypatch.setattr(
+        "app.rag.pipeline.embed_query",
+        lambda query: [0.1, 0.2],
+    )
+
+    provider = Mock()
+    provider.generate.return_value = "answer"
+    monkeypatch.setattr(
+        "app.rag.pipeline.get_llm_provider",
+        lambda: provider,
+    )
+
+    result = pipeline.ask("What is AI?", top_k=1)
+
+    assert result["sources"][0]["text"] == long_text[:600] + "…"
+
+
+def test_ask_short_source_text_is_not_truncated(monkeypatch):
+    pipeline = object.__new__(RAGPipeline)
+    pipeline.vector_store = Mock()
+    pipeline.vector_store.search.return_value = [
+        {
+            "document_id": "doc",
+            "chunk_id": "doc_0",
+            "chunk_index": 0,
+            "score": 0.9,
+            "text": "short chunk",
+        }
+    ]
+
+    monkeypatch.setattr(
+        "app.rag.pipeline.embed_query",
+        lambda query: [0.1, 0.2],
+    )
+
+    provider = Mock()
+    provider.generate.return_value = "answer"
+    monkeypatch.setattr(
+        "app.rag.pipeline.get_llm_provider",
+        lambda: provider,
+    )
+
+    result = pipeline.ask("What is AI?", top_k=1)
+
+    assert result["sources"][0]["text"] == "short chunk"
+
+
 def test_rag_chunk_creation():
 
     text = """

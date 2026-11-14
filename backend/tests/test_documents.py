@@ -1,4 +1,8 @@
+import asyncio
 from pathlib import Path
+
+import pytest
+from fastapi import HTTPException
 
 from app.services.document_service import (
     DocumentProcessingError,
@@ -31,6 +35,199 @@ def test_upload_txt(documents_client):
     assert data["file_type"] == ".txt"
     assert data["words"] > 0
     assert data["status"] == "indexed"
+
+
+def test_failed_upload_is_cleaned_up_and_can_be_retried(
+    documents_client,
+    monkeypatch,
+):
+    import app.api.documents as documents_api
+
+    pipeline_class = type(documents_api.rag_pipeline)
+
+    def failing_index(*args, **kwargs):
+        raise RuntimeError("index exploded")
+
+    monkeypatch.setattr(
+        documents_api.rag_pipeline,
+        "index_document",
+        failing_index,
+    )
+
+    content = b"CloudRAG failed upload cleanup test."
+
+    response = documents_client.post(
+        "/api/documents/upload",
+        files={
+            "file": (
+                "retry.txt",
+                content,
+                "text/plain",
+            )
+        },
+    )
+
+    assert response.status_code == 500
+
+    listing = documents_client.get(
+        "/api/documents"
+    )
+
+    assert listing.json()["total"] == 0
+
+    if documents_api.DOCUMENTS_DIR.exists():
+        assert list(
+            documents_api.DOCUMENTS_DIR.iterdir()
+        ) == []
+
+    monkeypatch.setattr(
+        documents_api,
+        "rag_pipeline",
+        pipeline_class(),
+    )
+
+    response = documents_client.post(
+        "/api/documents/upload",
+        files={
+            "file": (
+                "retry.txt",
+                content,
+                "text/plain",
+            )
+        },
+    )
+
+    assert response.status_code == 201
+
+
+def test_processing_runs_off_event_loop_thread(
+    documents_client,
+    monkeypatch,
+):
+    import threading
+
+    import app.api.documents as documents_api
+
+    event_loop_thread = {}
+    worker_thread = {}
+
+    original_validate = documents_api.validate_file_content
+
+    def record_validate(extension, content):
+        event_loop_thread["thread"] = threading.current_thread()
+        return original_validate(extension, content)
+
+    def fake_process(path):
+        worker_thread["thread"] = threading.current_thread()
+        return {
+            "document_id": "ignored",
+            "filename": path.name,
+            "file_type": path.suffix,
+            "file_size_bytes": path.stat().st_size,
+            "characters": 4,
+            "words": 1,
+            "pages": 1,
+            "text": "test",
+            "page_mapping": [1, 1, 1, 1],
+        }
+
+    monkeypatch.setattr(
+        documents_api,
+        "validate_file_content",
+        record_validate,
+    )
+    monkeypatch.setattr(
+        documents_api,
+        "process_document",
+        fake_process,
+    )
+
+    response = documents_client.post(
+        "/api/documents/upload",
+        files={
+            "file": (
+                "thread.txt",
+                b"test",
+                "text/plain",
+            )
+        },
+    )
+
+    assert response.status_code == 201
+    assert (
+        event_loop_thread["thread"]
+        is not worker_thread["thread"]
+    )
+
+
+def test_upload_exceeding_limit_returns_413(
+    documents_client,
+    monkeypatch,
+):
+    import app.api.documents as documents_api
+
+    monkeypatch.setattr(
+        documents_api,
+        "MAX_FILE_SIZE",
+        10,
+    )
+
+    response = documents_client.post(
+        "/api/documents/upload",
+        files={
+            "file": (
+                "big.txt",
+                b"x" * 100,
+                "text/plain",
+            )
+        },
+    )
+
+    assert response.status_code == 413
+    assert "limit" in response.json()["detail"].lower()
+    assert not documents_api.DOCUMENTS_DIR.exists()
+
+
+def test_size_check_aborts_before_reading_whole_stream(
+    monkeypatch,
+):
+    import app.api.documents as documents_api
+
+    class FakeUpload:
+        filename = "big.txt"
+
+        def __init__(self, total):
+            self.total = total
+            self.consumed = 0
+
+        async def read(self, size=-1):
+            if size is None or size < 0:
+                size = self.total - self.consumed
+            count = min(
+                size,
+                self.total - self.consumed,
+            )
+            self.consumed += count
+            return b"x" * count
+
+    monkeypatch.setattr(
+        documents_api,
+        "MAX_FILE_SIZE",
+        10,
+    )
+
+    fake = FakeUpload(5 * 1024 * 1024)
+
+    with pytest.raises(HTTPException) as excinfo:
+        asyncio.run(
+            documents_api.upload_document(
+                fake,
+                None,
+            )
+        )
+
+    assert excinfo.value.status_code == 413
+    assert fake.consumed < fake.total
 
 
 def test_reject_unsupported_file(documents_client):
