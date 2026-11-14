@@ -89,3 +89,9 @@ Thumbs.db
 # ==============================
 .docker/
 
+# CloudRAG
+*.env
+data/
+*.sarif
+trivy-results.sarif
+
