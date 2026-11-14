@@ -1,3 +1,5 @@
+> Archived internal status report. Some findings are outdated; see todo.md.
+
 # CloudRAG Final Test Matrix and Report
 
 **Date**: 2026-09-21
