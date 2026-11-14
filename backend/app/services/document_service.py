@@ -21,6 +21,9 @@ MAX_DOCX_UNCOMPRESSED_SIZE = 50 * 1024 * 1024
 # Maximum extracted text length to prevent processing enormous documents
 MAX_EXTRACTED_CHARACTERS = 5_000_000
 
+# %%EOF lives at the end of a PDF, so only scan the tail for completeness.
+PDF_EOF_SCAN_BYTES = 2048
+
 # Suspicious filename patterns to reject
 SUSPICIOUS_FILENAME_PATTERNS = [
     r"\.\.",  # Path traversal
@@ -78,7 +81,7 @@ def validate_file_content(extension: str, content: bytes) -> None:
                 "The uploaded file is not a valid PDF."
             )
         # Check for %%EOF marker to verify PDF completeness
-        if b"%%EOF" not in content[:1024 * 100]:  # Check first 100KB
+        if b"%%EOF" not in content[-PDF_EOF_SCAN_BYTES:]:
             raise DocumentProcessingError(
                 "The uploaded PDF appears to be corrupted or incomplete."
             )
