@@ -31,6 +31,11 @@ class SearchRequest(BaseModel):
         le=20,
     )
 
+    document_id: str | None = Field(
+        default=None,
+        description="Optionally restrict search to one indexed document.",
+    )
+
 
 class AskRequest(BaseModel):
     question: str = Field(
@@ -55,11 +60,21 @@ class AskRequest(BaseModel):
 @router.post("/search")
 def search(
     request: SearchRequest,
+    db: Session = Depends(get_db),
 ):
+
+    if request.document_id and not get_document(db, request.document_id):
+        logger.warning(
+            "rag_search_document_not_found",
+            document_id=request.document_id,
+            query_length=len(request.query),
+        )
+        raise HTTPException(status_code=404, detail="Document not found.")
 
     results = rag_pipeline.search(
         query=request.query,
         top_k=request.top_k,
+        document_id=request.document_id,
     )
 
     return {
