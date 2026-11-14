@@ -91,7 +91,7 @@ Thumbs.db
 
 # CloudRAG
 *.env
-data/
+/data/
 *.sarif
 trivy-results.sarif
 
