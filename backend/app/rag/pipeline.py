@@ -12,6 +12,18 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 
 INDEX_DIRECTORY = PROJECT_ROOT / "data" / "index"
 
+SOURCE_TEXT_LIMIT = 600
+
+
+def _truncate_source_text(
+    text: str,
+) -> str:
+
+    if len(text) <= SOURCE_TEXT_LIMIT:
+        return text
+
+    return text[:SOURCE_TEXT_LIMIT] + "…"
+
 
 class RAGPipeline:
     """
@@ -260,12 +272,15 @@ class RAGPipeline:
                "chunk_id": result["chunk_id"],
                "chunk_index": result["chunk_index"],
                "score": result["score"],
-               "page": result.get("page"),  # Include page number for citations
-               "filename": result.get(
-               "filename",
-                 result["document_id"],
-                  ),
-                   }
+                "page": result.get("page"),  # Include page number for citations
+                "filename": result.get(
+                "filename",
+                  result["document_id"],
+                   ),
+                "text": _truncate_source_text(
+                    result["text"],
+                ),
+                    }
               )
 
         context = "\n\n---\n\n".join(

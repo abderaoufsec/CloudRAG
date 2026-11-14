@@ -8,6 +8,7 @@ from app.rag.pipeline import rag_pipeline
 from app.providers.base import LLMProviderError
 from app.services.document_repository import (
     get_document,
+    get_documents_by_ids,
 )
 
 logger = structlog.get_logger()
@@ -115,25 +116,29 @@ def ask(
             detail="The local AI service is unavailable. Check Ollama and the configured model.",
         ) from exc
 
-    enriched_sources = []
+    document_ids = {
+        source["document_id"]
+        for source in result["sources"]
+    }
 
-    for source in result["sources"]:
+    documents_by_id = get_documents_by_ids(
+        db,
+        list(document_ids),
+    )
 
-        document = get_document(
-            db,
-            source["document_id"],
-        )
-
-        enriched_sources.append(
-            {
-                **source,
-                "filename": (
-                    document.filename
-                    if document
-                    else source["document_id"]
-                ),
-            }
-        )
+    enriched_sources = [
+        {
+            **source,
+            "filename": (
+                documents_by_id[
+                    source["document_id"]
+                ].filename
+                if source["document_id"] in documents_by_id
+                else source["document_id"]
+            ),
+        }
+        for source in result["sources"]
+    ]
 
     logger.info(
         "rag_ask_completed",

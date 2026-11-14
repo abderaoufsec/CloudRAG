@@ -42,6 +42,24 @@ def get_document_by_hash(
     return db.scalar(statement)
 
 
+def get_documents_by_ids(
+    db: Session,
+    document_ids: list[str],
+) -> dict[str, Document]:
+
+    if not document_ids:
+        return {}
+
+    statement = select(Document).where(
+        Document.document_id.in_(document_ids)
+    )
+
+    return {
+        document.document_id: document
+        for document in db.scalars(statement)
+    }
+
+
 def list_documents(
     db: Session,
 ) -> list[Document]:

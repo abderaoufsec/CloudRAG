@@ -4,6 +4,71 @@ from app.main import app
 from app.providers.base import LLMProviderError
 
 
+def test_ask_batches_filename_lookup(monkeypatch):
+    from types import SimpleNamespace
+
+    import app.api.rag as rag_api
+
+    calls = []
+
+    def fake_get_documents_by_ids(db, ids):
+        calls.append(list(ids))
+        return {
+            "doc-1": SimpleNamespace(filename="one.txt"),
+            "doc-2": SimpleNamespace(filename="two.txt"),
+        }
+
+    monkeypatch.setattr(
+        rag_api,
+        "get_documents_by_ids",
+        fake_get_documents_by_ids,
+        raising=False,
+    )
+    monkeypatch.setattr(
+        rag_api,
+        "get_document",
+        lambda db, document_id: None,
+    )
+    monkeypatch.setattr(
+        rag_api.rag_pipeline,
+        "ask",
+        lambda **_kwargs: {
+            "answer": "ok",
+            "sources": [
+                {
+                    "document_id": "doc-1",
+                    "chunk_id": "doc-1_0",
+                    "chunk_index": 0,
+                    "score": 0.9,
+                    "page": 1,
+                    "text": "t1",
+                },
+                {
+                    "document_id": "doc-2",
+                    "chunk_id": "doc-2_0",
+                    "chunk_index": 0,
+                    "score": 0.8,
+                    "page": 1,
+                    "text": "t2",
+                },
+            ],
+        },
+    )
+
+    with TestClient(app) as client:
+        response = client.post(
+            "/api/rag/ask",
+            json={"question": "hi"},
+        )
+
+    assert response.status_code == 200
+    assert len(calls) == 1
+
+    sources = response.json()["sources"]
+    assert sources[0]["filename"] == "one.txt"
+    assert sources[1]["filename"] == "two.txt"
+
+
 def test_search_forwards_document_id(monkeypatch):
     import app.api.rag as rag_api
 
