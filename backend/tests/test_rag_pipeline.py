@@ -1,7 +1,35 @@
+from types import SimpleNamespace
 from unittest.mock import Mock
+
+import pytest
 
 from app.rag.chunker import create_chunks
 from app.rag.pipeline import RAGPipeline
+
+
+def test_qdrant_without_credentials_is_lazy(monkeypatch):
+    import app.rag.pipeline as pipeline_module
+    import app.rag.vector_store as vector_store_module
+
+    monkeypatch.setattr(
+        pipeline_module,
+        "get_settings",
+        lambda: SimpleNamespace(vector_store="qdrant"),
+    )
+    monkeypatch.setattr(
+        vector_store_module,
+        "get_settings",
+        lambda: SimpleNamespace(
+            qdrant_url="",
+            qdrant_api_key="",
+            qdrant_collection="cloudrag",
+        ),
+    )
+
+    pipeline = RAGPipeline()
+
+    with pytest.raises(RuntimeError):
+        pipeline.vector_store
 
 
 def test_ask_sources_include_text(monkeypatch):

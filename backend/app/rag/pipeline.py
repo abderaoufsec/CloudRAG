@@ -47,13 +47,34 @@ class RAGPipeline:
 
         A bounded LRU cache is initialized for repeated query optimization.
         """
-        settings = get_settings()
-        if settings.vector_store.lower() == "qdrant":
-            self.vector_store = QdrantVectorStore(INDEX_DIRECTORY)
-        else:
-            self.vector_store = VectorStore(INDEX_DIRECTORY)
+        self._settings = get_settings()
+        self._vector_store = None
         self._search_cache = OrderedDict()
         self._max_cache_entries = 128
+
+    @property
+    def vector_store(self):
+        """
+        Lazily construct the configured vector store on first use.
+
+        This keeps importing the app from crashing when a remote backend is
+        selected but its credentials are missing; the error surfaces when the
+        store is actually needed.
+        """
+        if self._vector_store is None:
+            if self._settings.vector_store.lower() == "qdrant":
+                self._vector_store = QdrantVectorStore(
+                    INDEX_DIRECTORY
+                )
+            else:
+                self._vector_store = VectorStore(
+                    INDEX_DIRECTORY
+                )
+        return self._vector_store
+
+    @vector_store.setter
+    def vector_store(self, value):
+        self._vector_store = value
 
     def _ensure_cache(self):
         """
