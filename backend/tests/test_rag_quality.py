@@ -72,7 +72,56 @@ def test_context_is_limited_before_calling_the_llm(monkeypatch):
     result = pipeline.ask("Summarize the document.")
 
     assert result["answer"] == "Grounded answer."
-    assert len(captured["context"]) == 250
+    assert len(captured["context"]) <= 250
+
+
+def test_context_skips_chunks_that_do_not_fit(monkeypatch):
+    pipeline = RAGPipeline()
+    captured = {}
+
+    monkeypatch.setattr(
+        pipeline,
+        "search",
+        lambda **_: [
+            {
+                "document_id": "document-1",
+                "chunk_id": "document-1_0",
+                "chunk_index": 0,
+                "text": "A" * 100,
+                "score": 0.9,
+            },
+            {
+                "document_id": "document-1",
+                "chunk_id": "document-1_1",
+                "chunk_index": 1,
+                "text": "B" * 100,
+                "score": 0.8,
+            },
+        ],
+    )
+    monkeypatch.setattr(
+        "app.rag.pipeline.get_settings",
+        lambda: SimpleNamespace(
+            min_retrieval_score=0.35,
+            max_rag_context_characters=200,
+        ),
+    )
+
+    class FakeProvider:
+        def generate(self, **kwargs):
+            captured.update(kwargs)
+            return "Grounded answer."
+
+    monkeypatch.setattr(
+        "app.rag.pipeline.get_llm_provider",
+        lambda: FakeProvider(),
+    )
+
+    result = pipeline.ask("Summarize the document.")
+
+    assert len(captured["context"]) <= 200
+    assert "B" not in captured["context"]
+    assert len(result["sources"]) == 1
 
 
 def test_selected_document_is_passed_to_retrieval(monkeypatch):

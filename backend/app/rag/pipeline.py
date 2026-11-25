@@ -263,8 +263,22 @@ class RAGPipeline:
             if remaining <= 0:
                 break
 
-            context_parts.append(context_part[:remaining])
-            context_length += len(context_parts[-1])
+            if len(context_part) <= remaining:
+
+                context_parts.append(context_part)
+                context_length += len(context_part)
+
+            elif not context_parts:
+
+                context_parts.append(
+                    context_part[:remaining]
+                )
+                context_length += len(
+                    context_parts[-1]
+                )
+
+            else:
+                continue
 
             sources.append(
               {
