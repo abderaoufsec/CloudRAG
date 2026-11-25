@@ -4,6 +4,19 @@ import ChatMessage from "./ChatMessage";
 import SourceCard from "./SourceCard";
 
 
+let messageCounter = 0;
+
+
+function createMessageId() {
+  if (globalThis.crypto?.randomUUID) {
+    return globalThis.crypto.randomUUID();
+  }
+
+  messageCounter += 1;
+  return `message-${messageCounter}`;
+}
+
+
 function ChatWindow({
   selectedDocument,
   onAsk,
@@ -43,6 +56,7 @@ function ChatWindow({
     }
 
     const userMessage = {
+      id: createMessageId(),
       role: "user",
       content: trimmed,
     };
@@ -61,6 +75,7 @@ function ChatWindow({
       setMessages((current) => [
         ...current,
         {
+          id: createMessageId(),
           role: "assistant",
           content:
             result.answer,
@@ -76,6 +91,7 @@ function ChatWindow({
       setMessages((current) => [
         ...current,
         {
+          id: createMessageId(),
           role: "assistant",
           content:
             "I couldn't process that question. Please check that the backend and local AI model are running.",
@@ -222,9 +238,9 @@ function ChatWindow({
 
           <>
             {messages.map(
-              (message, index) => (
+              (message) => (
                 <ChatMessage
-                  key={index}
+                  key={message.id}
                   message={message}
                 />
               )
