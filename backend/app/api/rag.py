@@ -106,7 +106,7 @@ def ask(
         logger.warning(
             "rag_ask_document_not_found",
             document_id=request.document_id,
-            question=request.question,
+            question_length=len(request.question),
         )
         raise HTTPException(status_code=404, detail="Document not found.")
 
@@ -119,7 +119,7 @@ def ask(
     except LLMProviderError as exc:
         logger.error(
             "rag_ask_llm_provider_error",
-            question=request.question,
+            question_length=len(request.question),
             error=str(exc),
         )
         raise HTTPException(
@@ -162,7 +162,7 @@ def ask(
 
     logger.info(
         "rag_ask_completed",
-        question=request.question,
+        question_length=len(request.question),
         top_k=request.top_k,
         sources_count=len(enriched_sources),
         document_id=request.document_id,

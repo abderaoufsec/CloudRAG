@@ -73,6 +73,7 @@ async def add_request_id(request: Request, call_next):
     request.state.request_id = request_id
 
     # Add request ID to structured logging context
+    structlog.contextvars.clear_contextvars()
     structlog.contextvars.bind_contextvars(request_id=request_id)
 
     response = await call_next(request)
@@ -87,12 +88,31 @@ async def add_security_headers(request: Request, call_next):
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["Referrer-Policy"] = "no-referrer"
-    response.headers["Content-Security-Policy"] = (
-        "default-src 'self'; "
-        "object-src 'none'; "
-        "base-uri 'none'; "
-        "frame-ancestors 'none'"
-    )
+
+    if request.url.path in {
+        "/docs",
+        "/redoc",
+        "/openapi.json",
+    }:
+        # Swagger UI and ReDoc load their assets from jsDelivr.
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; "
+            "script-src 'self' https://cdn.jsdelivr.net; "
+            "style-src 'self' https://cdn.jsdelivr.net; "
+            "img-src 'self' https://cdn.jsdelivr.net "
+            "https://fastapi.tiangolo.com data:; "
+            "object-src 'none'; "
+            "base-uri 'none'; "
+            "frame-ancestors 'none'"
+        )
+    else:
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; "
+            "object-src 'none'; "
+            "base-uri 'none'; "
+            "frame-ancestors 'none'"
+        )
+
     return response
 
 
