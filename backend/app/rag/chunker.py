@@ -48,7 +48,12 @@ def create_chunks(
             "chunk_overlap must be smaller than chunk_size."
         )
 
-    text = normalize_text(text)
+    if page_mapping is None:
+        text = normalize_text(text)
+    elif len(page_mapping) != len(text):
+        raise ValueError(
+            "page_mapping length must match text length."
+        )
 
     if not text:
         return []

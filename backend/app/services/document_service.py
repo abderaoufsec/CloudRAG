@@ -6,6 +6,8 @@ from zipfile import BadZipFile, ZipFile
 from docx import Document as DocxDocument
 from pypdf import PdfReader
 
+from app.rag.chunker import normalize_text
+
 
 SUPPORTED_EXTENSIONS = {
     ".pdf",
@@ -148,26 +150,20 @@ def validate_file_extension(filename: str) -> str:
     return extension
 
 
-def extract_pdf(path: Path) -> tuple[str, int, list[int]]:
+def extract_pdf(path: Path) -> tuple[list[str], int]:
     """
-    Extract text from PDF with page mapping.
-    Returns (text, page_count, page_mapping) where page_mapping
-    maps character positions to page numbers for citation purposes.
+    Extract per-page text from a PDF.
+    Returns (page_texts, page_count). Page mapping is built later from the
+    same normalized string that is actually chunked.
     """
     reader = PdfReader(str(path))
 
-    pages = len(reader.pages)
-    text_parts = []
-    page_mapping = []  # Tracks which page each character belongs to
+    page_texts = [
+        page.extract_text() or ""
+        for page in reader.pages
+    ]
 
-    for page_num, page in enumerate(reader.pages):
-        text = page.extract_text() or ""
-        text_parts.append(text)
-        # Mark each character in this text as belonging to this page
-        for _ in text:
-            page_mapping.append(page_num + 1)  # 1-indexed page numbers
-
-    return "\n\n".join(text_parts), pages, page_mapping
+    return page_texts, len(page_texts)
 
 
 def extract_docx(path: Path) -> tuple[str, int, list[int]]:
@@ -205,19 +201,21 @@ def extract_text_file(path: Path) -> tuple[str, int, list[int]]:
     return text, 1, page_mapping
 
 
-def extract_text(path: Path, extension: str) -> tuple[str, int, list[int]]:
+def extract_text(path: Path, extension: str) -> tuple[list[str], int]:
     """
-    Extract text from a document with page mapping for citations.
-    Returns (text, page_count, page_mapping).
+    Extract per-page text from a document for citation purposes.
+    Returns (page_texts, page_count).
     """
     if extension == ".pdf":
         return extract_pdf(path)
 
     if extension == ".docx":
-        return extract_docx(path)
+        text, pages, _ = extract_docx(path)
+        return [text], pages
 
     if extension in {".txt", ".md"}:
-        return extract_text_file(path)
+        text, pages, _ = extract_text_file(path)
+        return [text], pages
 
     raise DocumentProcessingError(
         f"No extractor available for {extension}"
@@ -235,6 +233,34 @@ def clean_text(text: str) -> str:
     return "\n".join(cleaned_lines)
 
 
+def build_normalized_text(
+    page_texts: list[str],
+) -> tuple[str, list[int]]:
+    """
+    Normalize each page and build a page mapping over the exact final string.
+    Returns (text, page_mapping) where len(page_mapping) == len(text).
+    """
+
+    parts = []
+    page_mapping = []
+
+    for page_num, raw_page in enumerate(page_texts, start=1):
+
+        page_text = normalize_text(raw_page)
+
+        if not page_text:
+            continue
+
+        if parts:
+            parts.append("\n\n")
+            page_mapping.extend([page_num] * 2)
+
+        parts.append(page_text)
+        page_mapping.extend([page_num] * len(page_text))
+
+    return "".join(parts), page_mapping
+
+
 def process_document(path: Path) -> dict:
     """
     Process a document through validation, extraction, and cleaning.
@@ -245,15 +271,15 @@ def process_document(path: Path) -> dict:
 
     extension = validate_file_extension(path.name)
 
-    text, pages, page_mapping = extract_text(path, extension)
+    page_texts, pages = extract_text(path, extension)
+
+    text, page_mapping = build_normalized_text(page_texts)
 
     # Check extracted text length to prevent processing enormous documents
     if len(text) > MAX_EXTRACTED_CHARACTERS:
         raise DocumentProcessingError(
             f"Document exceeds maximum extractable character limit of {MAX_EXTRACTED_CHARACTERS:,}."
         )
-
-    text = clean_text(text)
 
     if not text.strip():
         raise DocumentProcessingError(
