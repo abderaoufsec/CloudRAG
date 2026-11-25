@@ -3,10 +3,12 @@ from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
+from app.config import get_settings
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 
-DATA_DIR = PROJECT_ROOT / "data"
+DATA_DIR = get_settings().resolved_data_dir
 
 DATA_DIR.mkdir(
     parents=True,

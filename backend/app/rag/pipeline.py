@@ -10,7 +10,7 @@ from app.config import get_settings
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 
-INDEX_DIRECTORY = PROJECT_ROOT / "data" / "index"
+INDEX_DIRECTORY = get_settings().resolved_data_dir / "index"
 
 SOURCE_TEXT_LIMIT = 600
 

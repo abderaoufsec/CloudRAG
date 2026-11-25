@@ -4,6 +4,7 @@ from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = BACKEND_DIR.parent
 
 
 class Settings(BaseSettings):
@@ -24,6 +25,8 @@ class Settings(BaseSettings):
     qdrant_api_key: str = ""
     qdrant_collection: str = "cloudrag"
 
+    data_dir: str = ""
+
     max_upload_size_mb: int = 10
     # The multilingual MiniLM embedding model produces lower absolute cosine
     # scores for some Arabic and cross-language queries than for English.
@@ -31,6 +34,12 @@ class Settings(BaseSettings):
     # evidence through to the grounded-answer step.
     min_retrieval_score: float = 0.30
     max_rag_context_characters: int = 12000
+
+    @property
+    def resolved_data_dir(self) -> Path:
+        if self.data_dir:
+            return Path(self.data_dir).expanduser().resolve()
+        return PROJECT_ROOT / "data"
 
     @property
     def cors_origin_list(self) -> list[str]:

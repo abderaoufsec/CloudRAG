@@ -49,9 +49,11 @@ router = APIRouter(
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 
-DOCUMENTS_DIR = PROJECT_ROOT / "data" / "documents"
+DATA_DIR = get_settings().resolved_data_dir
 
-PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"
+DOCUMENTS_DIR = DATA_DIR / "documents"
+
+PROCESSED_DIR = DATA_DIR / "processed"
 
 MAX_FILE_SIZE = get_settings().max_upload_size_mb * 1024 * 1024
 
