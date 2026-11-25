@@ -68,6 +68,38 @@ SUPPORTED_EXTENSIONS = {
 STALE_PROCESSING_AGE = timedelta(minutes=10)
 
 
+def _resolve_inside(
+    directory: Path,
+    filename: str,
+) -> Path | None:
+    """Resolve a path and reject anything outside ``directory``."""
+
+    base = directory.resolve()
+    candidate = (base / filename).resolve()
+
+    if not candidate.is_relative_to(base):
+        return None
+
+    return candidate
+
+
+def _document_artifact_paths(
+    document: Document,
+) -> tuple[Path | None, Path | None]:
+    document_id = document.document_id
+
+    return (
+        _resolve_inside(
+            DOCUMENTS_DIR,
+            f"{document_id}{document.file_type}",
+        ),
+        _resolve_inside(
+            PROCESSED_DIR,
+            f"{document_id}.txt",
+        ),
+    )
+
+
 def _delete_document_artifacts(
     db: Session,
     document: Document,
@@ -85,15 +117,21 @@ def _delete_document_artifacts(
             error=str(exc),
         )
 
-    (
-        DOCUMENTS_DIR
-        / f"{document_id}{document.file_type}"
-    ).unlink(missing_ok=True)
+    original_file, processed_file = _document_artifact_paths(
+        document,
+    )
 
-    (
-        PROCESSED_DIR
-        / f"{document_id}.txt"
-    ).unlink(missing_ok=True)
+    if original_file is None or processed_file is None:
+        logger.warning(
+            "document_artifacts_outside_data_dir",
+            document_id=document_id,
+        )
+
+    if original_file is not None:
+        original_file.unlink(missing_ok=True)
+
+    if processed_file is not None:
+        processed_file.unlink(missing_ok=True)
 
     delete_document(
         db,
@@ -440,19 +478,22 @@ def remove_document(
             detail="Document not found.",
         )
 
+    original_file, processed_file = _document_artifact_paths(
+        document,
+    )
+
+    if original_file is None or processed_file is None:
+        logger.warning(
+            "document_artifacts_outside_data_dir",
+            document_id=document_id,
+        )
+
+        raise HTTPException(
+            status_code=404,
+            detail="Document not found.",
+        )
+
     rag_pipeline.delete_document(document_id)
-
-    extension = document.file_type
-
-    original_file = (
-        DOCUMENTS_DIR
-        / f"{document.document_id}{extension}"
-    )
-
-    processed_file = (
-        PROCESSED_DIR
-        / f"{document.document_id}.txt"
-    )
 
     original_file.unlink(
         missing_ok=True
