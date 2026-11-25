@@ -1,3 +1,5 @@
+import re
+
 from ollama import Client, ResponseError
 
 from app.config import Settings
@@ -17,6 +19,24 @@ Rules:
 4. Give a concise, useful answer in the language of the user's question.
 5. Do not add citations that are not present in the supplied source list.
 """.strip()
+
+
+def _strip_reasoning(text: str) -> str:
+    """Remove Qwen <think>...</think> reasoning blocks from model output."""
+
+    cleaned = re.sub(
+        r"<think>.*?</think>",
+        "",
+        text,
+        flags=re.DOTALL,
+    )
+
+    if "<think>" in cleaned:
+        head = cleaned.split("<think>", 1)[0]
+        if head.strip():
+            cleaned = head
+
+    return cleaned.strip()
 
 
 class LocalOllamaProvider(LLMProvider):
@@ -53,7 +73,10 @@ Answer from the document context only."""
                 "Local Ollama is unavailable or the configured model is missing."
             ) from exc
 
-        answer = response["message"]["content"].strip()
+        answer = _strip_reasoning(
+            response["message"]["content"]
+        )
+
         if not answer:
             raise LLMProviderError("Local Ollama returned an empty answer.")
 
