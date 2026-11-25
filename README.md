@@ -164,7 +164,7 @@ copy .env.example .env
 ```powershell
 cd backend
 $env:PYTHONPATH = 'backend'
-.\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8001 --reload
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
 ### 4. Start the frontend
@@ -175,7 +175,7 @@ npm install
 npm run dev
 ```
 
-The frontend will be available at `http://localhost:5173` and the backend API at `http://localhost:8001`.
+The frontend will be available at `http://localhost:5173` and the backend API at `http://localhost:8000`.
 
 ## Docker Quick Start
 
