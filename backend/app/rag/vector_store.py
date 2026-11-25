@@ -30,6 +30,10 @@ except Exception:  # pragma: no cover - optional dependency
     VectorParams = None
 
 
+class VectorStoreError(Exception):
+    """Raised when the vector store backend cannot complete an operation."""
+
+
 class QdrantVectorStore:
     """
     Optional remote vector store adapter for a Qdrant Cloud cluster.
@@ -109,6 +113,21 @@ class QdrantVectorStore:
                 )
             )
 
+        self.client.delete(
+            collection_name=self.collection_name,
+            points_selector=Filter(
+                must=[
+                    FieldCondition(
+                        key="document_id",
+                        match=MatchValue(
+                            value=chunks[0].document_id
+                        ),
+                    )
+                ]
+            ),
+            wait=True,
+        )
+
         self.client.upsert(
             collection_name=self.collection_name,
             wait=True,
@@ -147,18 +166,20 @@ class QdrantVectorStore:
             )
 
         try:
-            hits = self.client.search(
+            response = self.client.query_points(
                 collection_name=self.collection_name,
-                query_vector=query_vector,
+                query=query_vector,
                 query_filter=qfilter,
                 limit=top_k,
                 with_payload=True,
             )
-        except Exception:
-            return []
+        except Exception as exc:
+            raise VectorStoreError(
+                "Vector search failed"
+            ) from exc
 
         results = []
-        for hit in hits:
+        for hit in response.points:
             payload = hit.payload or {}
             results.append(
                 {

@@ -5,6 +5,7 @@ import structlog
 
 from app.db.database import get_db
 from app.rag.pipeline import rag_pipeline
+from app.rag.vector_store import VectorStoreError
 from app.providers.base import LLMProviderError
 from app.services.document_repository import (
     get_document,
@@ -72,11 +73,21 @@ def search(
         )
         raise HTTPException(status_code=404, detail="Document not found.")
 
-    results = rag_pipeline.search(
-        query=request.query,
-        top_k=request.top_k,
-        document_id=request.document_id,
-    )
+    try:
+        results = rag_pipeline.search(
+            query=request.query,
+            top_k=request.top_k,
+            document_id=request.document_id,
+        )
+    except VectorStoreError as exc:
+        logger.error(
+            "rag_search_vector_store_error",
+            error=str(exc),
+        )
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="The vector store is unavailable.",
+        ) from exc
 
     return {
         "success": True,
@@ -114,6 +125,15 @@ def ask(
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="The local AI service is unavailable. Check Ollama and the configured model.",
+        ) from exc
+    except VectorStoreError as exc:
+        logger.error(
+            "rag_ask_vector_store_error",
+            error=str(exc),
+        )
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="The vector store is unavailable.",
         ) from exc
 
     document_ids = {
