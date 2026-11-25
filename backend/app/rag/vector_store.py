@@ -1,4 +1,6 @@
 import json
+import os
+import threading
 import uuid
 from pathlib import Path
 
@@ -224,6 +226,8 @@ class VectorStore:
 
         self.metadata = []
 
+        self._lock = threading.RLock()
+
         self._load()
 
     def _load(self):
@@ -253,22 +257,47 @@ class VectorStore:
 
         This method writes the current index state to cloudrag.index and
         the metadata list to metadata.json, ensuring changes survive application restarts.
+        Writes go through .tmp files and os.replace so readers never see a partial file.
         """
-        if self.index is not None:
+        with self._lock:
 
-            faiss.write_index(
-                self.index,
-                str(self.index_path),
+            if self.index is not None:
+
+                index_tmp_path = (
+                    self.index_path.with_name(
+                        self.index_path.name + ".tmp"
+                    )
+                )
+
+                faiss.write_index(
+                    self.index,
+                    str(index_tmp_path),
+                )
+
+                os.replace(
+                    index_tmp_path,
+                    self.index_path,
+                )
+
+            metadata_tmp_path = (
+                self.metadata_path.with_name(
+                    self.metadata_path.name + ".tmp"
+                )
             )
 
-        self.metadata_path.write_text(
-            json.dumps(
-                self.metadata,
-                ensure_ascii=False,
-                indent=2,
-            ),
-            encoding="utf-8",
-        )
+            metadata_tmp_path.write_text(
+                json.dumps(
+                    self.metadata,
+                    ensure_ascii=False,
+                    indent=2,
+                ),
+                encoding="utf-8",
+            )
+
+            os.replace(
+                metadata_tmp_path,
+                self.metadata_path,
+            )
 
     def add_chunks(
         self,
@@ -287,44 +316,46 @@ class VectorStore:
             chunks: List of TextChunk objects with text and metadata
             embeddings: Array of embedding vectors corresponding to chunks
         """
-        if not chunks:
-            return
+        with self._lock:
 
-        # Check if document already exists and delete old vectors
-        if chunks:
-            document_id = chunks[0].document_id
-            existing_doc_ids = {m["document_id"] for m in self.metadata}
-            if document_id in existing_doc_ids:
-                self.delete_document(document_id)
+            if not chunks:
+                return
 
-        vectors = np.asarray(
-            embeddings,
-            dtype="float32",
-        )
+            # Check if document already exists and delete old vectors
+            if chunks:
+                document_id = chunks[0].document_id
+                existing_doc_ids = {m["document_id"] for m in self.metadata}
+                if document_id in existing_doc_ids:
+                    self.delete_document(document_id)
 
-        dimension = vectors.shape[1]
-
-        if self.index is None:
-
-            self.index = faiss.IndexFlatIP(
-                dimension
+            vectors = np.asarray(
+                embeddings,
+                dtype="float32",
             )
 
-        self.index.add(vectors)
+            dimension = vectors.shape[1]
 
-        for chunk in chunks:
+            if self.index is None:
 
-            self.metadata.append(
-                {
-                    "chunk_id": chunk.chunk_id,
-                    "document_id": chunk.document_id,
-                    "chunk_index": chunk.chunk_index,
-                    "text": chunk.text,
-                    "page": chunk.page,  # Include page number for citations
-                }
-            )
+                self.index = faiss.IndexFlatIP(
+                    dimension
+                )
 
-        self._save()
+            self.index.add(vectors)
+
+            for chunk in chunks:
+
+                self.metadata.append(
+                    {
+                        "chunk_id": chunk.chunk_id,
+                        "document_id": chunk.document_id,
+                        "chunk_index": chunk.chunk_index,
+                        "text": chunk.text,
+                        "page": chunk.page,  # Include page number for citations
+                    }
+                )
+
+            self._save()
 
     def delete_document(
         self,
@@ -340,60 +371,62 @@ class VectorStore:
         Args:
             document_id: The ID of the document to remove from the store
         """
-        remaining_metadata = []
+        with self._lock:
 
-        remaining_vectors = []
+            remaining_metadata = []
 
-        if self.index is not None:
+            remaining_vectors = []
 
-            vectors = self.index.reconstruct_n(
-                0,
-                self.index.ntotal,
-            )
+            if self.index is not None:
 
-            for index, metadata in enumerate(
-                self.metadata
-            ):
+                vectors = self.index.reconstruct_n(
+                    0,
+                    self.index.ntotal,
+                )
 
-                if (
-                    metadata["document_id"]
-                    != document_id
+                for index, metadata in enumerate(
+                    self.metadata
                 ):
 
-                    remaining_metadata.append(
-                        metadata
-                    )
+                    if (
+                        metadata["document_id"]
+                        != document_id
+                    ):
 
-                    remaining_vectors.append(
-                        vectors[index]
-                    )
+                        remaining_metadata.append(
+                            metadata
+                        )
 
-        self.metadata = remaining_metadata
+                        remaining_vectors.append(
+                            vectors[index]
+                        )
 
-        if remaining_vectors:
+            self.metadata = remaining_metadata
 
-            matrix = np.asarray(
-                remaining_vectors,
-                dtype="float32",
-            )
+            if remaining_vectors:
 
-            dimension = matrix.shape[1]
+                matrix = np.asarray(
+                    remaining_vectors,
+                    dtype="float32",
+                )
 
-            self.index = faiss.IndexFlatIP(
-                dimension
-            )
+                dimension = matrix.shape[1]
 
-            self.index.add(matrix)
+                self.index = faiss.IndexFlatIP(
+                    dimension
+                )
 
-        else:
+                self.index.add(matrix)
 
-            self.index = None
+            else:
 
-            self.index_path.unlink(
-                missing_ok=True
-            )
+                self.index = None
 
-        self._save()
+                self.index_path.unlink(
+                    missing_ok=True
+                )
+
+            self._save()
 
     def search(
         self,
@@ -420,58 +453,60 @@ class VectorStore:
         Returns:
             List of dictionaries containing chunk metadata and similarity scores
         """
-        if self.index is None:
-            return []
+        with self._lock:
 
-        if self.index.ntotal == 0:
-            return []
+            if self.index is None:
+                return []
 
-        query_vector = np.asarray(
-            query_embedding,
-            dtype="float32",
-        )
+            if self.index.ntotal == 0:
+                return []
 
-        # A document filter is applied after the exact FAISS search.  Asking
-        # FAISS for every vector here keeps the selected-document behaviour
-        # correct even when its best chunk would otherwise fall below top_k.
-        result_count = self.index.ntotal if document_id else min(
-            top_k, self.index.ntotal
-        )
-        scores, indices = (
-            self.index.search(
-                query_vector,
-                result_count,
-            )
-        )
-
-        results = []
-
-        for score, index in zip(
-            scores[0],
-            indices[0],
-        ):
-
-            if index < 0:
-                continue
-
-            metadata = self.metadata[
-                index
-            ]
-
-            if document_id and metadata["document_id"] != document_id:
-                continue
-
-            results.append(
-                {
-                    **metadata,
-                    "score": float(score),
-                }
+            query_vector = np.asarray(
+                query_embedding,
+                dtype="float32",
             )
 
-            if len(results) >= top_k:
-                break
+            # A document filter is applied after the exact FAISS search.  Asking
+            # FAISS for every vector here keeps the selected-document behaviour
+            # correct even when its best chunk would otherwise fall below top_k.
+            result_count = self.index.ntotal if document_id else min(
+                top_k, self.index.ntotal
+            )
+            scores, indices = (
+                self.index.search(
+                    query_vector,
+                    result_count,
+                )
+            )
 
-        return results
+            results = []
+
+            for score, index in zip(
+                scores[0],
+                indices[0],
+            ):
+
+                if index < 0:
+                    continue
+
+                metadata = self.metadata[
+                    index
+                ]
+
+                if document_id and metadata["document_id"] != document_id:
+                    continue
+
+                results.append(
+                    {
+                        **metadata,
+                        "score": float(score),
+                    }
+                )
+
+                if len(results) >= top_k:
+                    break
+
+            return results
 
     @property
     def size(self) -> int:
