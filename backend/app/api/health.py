@@ -1,8 +1,11 @@
+import structlog
 from fastapi import APIRouter, HTTPException
 
 from app.config import get_settings
 from app.rag.pipeline import rag_pipeline
 
+
+logger = structlog.get_logger()
 
 router = APIRouter(prefix="/api", tags=["system"])
 
@@ -19,7 +22,6 @@ def health_check():
         "status": "ok",
         "project": settings.app_name,
         "version": settings.app_version,
-        "environment": settings.environment,
         "mode": settings.llm_provider,
     }
 
@@ -45,39 +47,50 @@ def readiness_check():
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))
         checks["database"] = "ready"
-    except Exception as exc:
-        checks["database"] = f"unavailable: {str(exc)}"
+    except Exception:
+        logger.exception("readiness_database_failed")
+        checks["database"] = "unavailable"
 
     try:
         # Check vector store
         vector_size = rag_pipeline.vector_store.size
         checks["vector_store"] = f"ready ({vector_size} vectors)"
-    except Exception as exc:
-        checks["vector_store"] = f"unavailable: {str(exc)}"
+    except Exception:
+        logger.exception("readiness_vector_store_failed")
+        checks["vector_store"] = "unavailable"
 
     try:
-        # Check embedding provider
+        # Report embedding readiness without loading the model here.
         from app.rag.embeddings import get_embedding_model
-        model = get_embedding_model()
-        checks["embedding_provider"] = f"ready ({model})"
-    except Exception as exc:
-        checks["embedding_provider"] = f"unavailable: {str(exc)}"
+        if get_embedding_model.cache_info().currsize > 0:
+            checks["embedding_provider"] = "ready"
+        else:
+            checks["embedding_provider"] = "not_loaded"
+    except Exception:
+        logger.exception("readiness_embedding_provider_failed")
+        checks["embedding_provider"] = "unavailable"
 
     try:
-        # Check LLM provider
+        # Check the local LLM provider cheaply and truthfully.
         settings = get_settings()
         if settings.llm_provider == "local":
-            from app.providers.factory import get_llm_provider
-            provider = get_llm_provider()
-            checks["llm_provider"] = f"ready ({settings.llm_provider})"
+            from ollama import Client
+            Client(
+                host=settings.ollama_base_url,
+                timeout=2,
+            ).list()
+            checks["llm_provider"] = "ready (local)"
         else:
             checks["llm_provider"] = f"configured ({settings.llm_provider})"
-    except Exception as exc:
-        checks["llm_provider"] = f"unavailable: {str(exc)}"
+    except Exception:
+        logger.exception("readiness_llm_provider_failed")
+        checks["llm_provider"] = "unavailable"
 
     # Determine overall readiness
     all_ready = all(
-        check.startswith("ready") or check.startswith("configured")
+        check.startswith("ready")
+        or check.startswith("configured")
+        or check == "not_loaded"
         for check in checks.values()
     )
 
